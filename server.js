@@ -1,4 +1,4 @@
-// server.js – live-server med spelkod + geokodning (skriv stadens namn)
+// server.js – live-server med spelkod + geokodning + 20s ronder + lobbylista
 const express = require('express');
 const http = require('http');
 const cors = require('cors');
@@ -31,7 +31,7 @@ const gamesByCode = new Map();
 async function geocodeCity(name) {
   const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=${encodeURIComponent(name)}`;
   const res = await fetch(url, {
-    headers: { 'User-Agent': 'kart-quiz/1.0 (din-email@exempel.se)' }
+    headers: { 'User-Agent': 'kart-quiz/1.0 (skidgud@gmail.com)' }
   });
   if (!res.ok) throw new Error('Geokodning misslyckades');
   const data = await res.json();
@@ -73,8 +73,8 @@ io.on('connection', (socket) => {
   socket.data.gameId = null;
   socket.data.playerId = null;
 
-  // HOST: skapa spel -> få kod
-  socket.on('host:createGame', ({ roundTimeSec = 10, penaltyKm = 20000 } = {}) => {
+  // HOST: skapa spel -> få kod (default 20s ronder)
+  socket.on('host:createGame', ({ roundTimeSec = 20, penaltyKm = 20000 } = {}) => {
     const gameId = `${Date.now()}-${Math.floor(Math.random()*1000)}`;
     let code; do { code = makeCode(); } while (gamesByCode.has(code));
 
@@ -115,7 +115,7 @@ io.on('connection', (socket) => {
     io.to(room(gameId)).emit('lobby:update', { players: [...g.players.values()] });
   });
 
-  // HOST: starta runda – med stadens namn ELLER lat/lon
+  // HOST: starta runda – skriv stad (servern geokodar) eller skicka lat/lon
   socket.on('host:startRound', async ({ gameId, cityName, lat, lng }) => {
     const g = gamesById.get(gameId);
     if (!g || socket.id !== g.host) return;
@@ -187,6 +187,25 @@ io.on('connection', (socket) => {
       .sort((a,b)=>a.totalKm-b.totalKm)
       .map(p => ({ name: p.name, totalKm: +p.totalKm.toFixed(1) }));
     io.to(room(gameId)).emit('game:final', { leaderboard });
+  });
+
+  // Rensa när någon kopplar ner
+  socket.on('disconnect', () => {
+    const gid = socket.data.gameId;
+    if (!gid) return;
+    const g = gamesById.get(gid);
+    if (!g) return;
+    if (socket.data.role === 'player' && socket.data.playerId) {
+      g.players.delete(socket.data.playerId);
+      io.to(room(gid)).emit('lobby:update', { players: [...g.players.values()] });
+    } else if (socket.id === g.host) {
+      // Om host försvinner: avsluta och visa slutställning
+      g.state = 'finished';
+      const leaderboard = [...g.players.values()]
+        .sort((a,b)=>a.totalKm-b.totalKm)
+        .map(p => ({ name: p.name, totalKm: +p.totalKm.toFixed(1) }));
+      io.to(room(gid)).emit('game:final', { leaderboard });
+    }
   });
 });
 
