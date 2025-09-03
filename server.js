@@ -1,4 +1,4 @@
-// server.js – enkel live-server för kart-quiz (host + spelare)
+// server.js – live-server med spelkod + geokodning (skriv stadens namn)
 const express = require('express');
 const http = require('http');
 const cors = require('cors');
@@ -9,9 +9,9 @@ app.use(cors());
 app.get('/health', (req, res) => res.json({ ok: true }));
 
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: '*' } }); // enkel CORS för test
+const io = new Server(server, { cors: { origin: '*' } }); // enkelt för test
 
-// --- Hjälp ---
+// ---- Avståndsberäkning ----
 const haversineKm = (a, b) => {
   const toRad = d => d * Math.PI / 180, R = 6371;
   const dLat = toRad(b.lat - a.lat), dLon = toRad(b.lng - a.lng);
@@ -22,9 +22,24 @@ const haversineKm = (a, b) => {
 const makeCode = () => String(Math.floor(100000 + Math.random()*900000)); // 6 siffror
 const room = id => `game:${id}`;
 
-// --- “Databas” i minnet ---
-const gamesById = new Map();   // id -> game
-const gamesByCode = new Map(); // code -> id
+// ---- Minnes-”databas” ----
+const gamesById = new Map();
+const gamesByCode = new Map();
+
+// ---- Geokodning (stad -> lat/lon) via Nominatim ----
+// Byt 'din-email@exempel.se' till din riktiga e-post enligt Nominatims policy.
+async function geocodeCity(name) {
+  const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=${encodeURIComponent(name)}`;
+  const res = await fetch(url, {
+    headers: { 'User-Agent': 'kart-quiz/1.0 (din-email@exempel.se)' }
+  });
+  if (!res.ok) throw new Error('Geokodning misslyckades');
+  const data = await res.json();
+  if (Array.isArray(data) && data[0]) {
+    return { name, lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+  }
+  throw new Error('Hittade inte stad');
+}
 
 function endRound(gameId) {
   const g = gamesById.get(gameId);
@@ -54,26 +69,20 @@ function endRound(gameId) {
 }
 
 io.on('connection', (socket) => {
-  socket.data.role = null;   // 'host' eller 'player'
-  socket.data.gameId = null; // vilket spel
+  socket.data.role = null;
+  socket.data.gameId = null;
   socket.data.playerId = null;
 
-  // Host skapar spel -> får kod
+  // HOST: skapa spel -> få kod
   socket.on('host:createGame', ({ roundTimeSec = 10, penaltyKm = 20000 } = {}) => {
     const gameId = `${Date.now()}-${Math.floor(Math.random()*1000)}`;
     let code; do { code = makeCode(); } while (gamesByCode.has(code));
 
     const game = {
-      id: gameId,
-      code,
-      state: 'lobby',     // 'lobby' | 'in_round' | 'showing_results' | 'finished'
-      host: socket.id,
-      round: 0,
-      roundTimeSec,
-      penaltyKm,
-      players: new Map(), // playerId -> {id,name,totalKm}
-      current: null,      // pågående runda
-      timer: null
+      id: gameId, code,
+      state: 'lobby', host: socket.id,
+      round: 0, roundTimeSec, penaltyKm,
+      players: new Map(), current: null, timer: null
     };
     gamesById.set(gameId, game);
     gamesByCode.set(code, gameId);
@@ -86,7 +95,7 @@ io.on('connection', (socket) => {
     io.to(room(gameId)).emit('lobby:update', { players: [...game.players.values()] });
   });
 
-  // Spelare går med med kod + namn
+  // SPELARE: gå med
   socket.on('player:join', ({ code, name }) => {
     const gameId = gamesByCode.get(code);
     const g = gamesById.get(gameId);
@@ -106,11 +115,27 @@ io.on('connection', (socket) => {
     io.to(room(gameId)).emit('lobby:update', { players: [...g.players.values()] });
   });
 
-  // Host startar runda (host väljer lat/lon)
-  socket.on('host:startRound', ({ gameId, cityName, lat, lng }) => {
+  // HOST: starta runda – med stadens namn ELLER lat/lon
+  socket.on('host:startRound', async ({ gameId, cityName, lat, lng }) => {
     const g = gamesById.get(gameId);
     if (!g || socket.id !== g.host) return;
     if (g.timer) clearTimeout(g.timer);
+
+    let target;
+    try {
+      if (typeof lat === 'number' && typeof lng === 'number') {
+        target = { lat, lng };
+      } else if (cityName) {
+        const c = await geocodeCity(cityName);
+        target = { lat: c.lat, lng: c.lng };
+      } else {
+        socket.emit('round:error', { message: 'Ange stad eller lat,lng' });
+        return;
+      }
+    } catch (e) {
+      socket.emit('round:error', { message: 'Kunde inte hitta staden.' });
+      return;
+    }
 
     g.round += 1;
     const startedAt = Date.now();
@@ -118,44 +143,42 @@ io.on('connection', (socket) => {
     g.state = 'in_round';
     g.current = {
       cityName: cityName || 'Okänd plats',
-      target: { lat, lng },
-      startedAt, deadlineAt,
-      guesses: new Map() // playerId -> {lat,lng,km,at}
+      target, startedAt, deadlineAt,
+      guesses: new Map()
     };
 
-    io.to(room(gameId)).emit('round:started', { round: g.round, cityName: g.current.cityName, deadlineAt });
+    io.to(room(gameId)).emit('round:started', {
+      round: g.round, cityName: g.current.cityName, deadlineAt
+    });
 
-    // Stäng rundan när tiden gått
     g.timer = setTimeout(() => endRound(gameId), g.roundTimeSec * 1000);
   });
 
-  // Spelare skickar gissning (första gissning räknas)
+  // SPELARE: skicka gissning
   socket.on('player:submitGuess', ({ gameId, lat, lng }) => {
     const g = gamesById.get(gameId);
     if (!g || g.state !== 'in_round') return;
     const pid = socket.data.playerId;
     if (!pid || !g.players.has(pid)) return;
-    if (g.current.guesses.has(pid)) return; // redan gissat
+    if (g.current.guesses.has(pid)) return;
 
     const km = haversineKm({ lat, lng }, g.current.target);
     g.current.guesses.set(pid, { lat, lng, km, at: Date.now() });
     socket.emit('guess:accepted', { km: +km.toFixed(1) });
 
-    // Stäng när alla gissat
     if (g.current.guesses.size >= g.players.size) {
       if (g.timer) clearTimeout(g.timer);
       endRound(gameId);
     }
   });
 
-  // Host: nästa runda / avsluta
+  // HOST: nästa runda / avsluta
   socket.on('host:nextRound', ({ gameId }) => {
     const g = gamesById.get(gameId);
     if (!g || socket.id !== g.host) return;
     g.state = 'lobby';
     io.to(room(gameId)).emit('lobby:ready');
   });
-
   socket.on('host:endGame', ({ gameId }) => {
     const g = gamesById.get(gameId);
     if (!g || socket.id !== g.host) return;
