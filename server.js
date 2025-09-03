@@ -1,4 +1,4 @@
-// server.js – live-server med spelkod + geokodning + 20s ronder + lobbylista
+// server.js – live-server med 10 km frizon, 20s ronder, lobbylista och geokodning
 const express = require('express');
 const http = require('http');
 const cors = require('cors');
@@ -11,7 +11,12 @@ app.get('/health', (req, res) => res.json({ ok: true }));
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } }); // enkelt för test
 
-// ---- Avståndsberäkning ----
+// ===== Inställningar =====
+const FREE_RADIUS_KM = 10;      // <-- Frizon: första 10 km är gratis
+const DEFAULT_ROUND_SEC = 20;   // 20s ronder
+const DEFAULT_PENALTY_KM = 20000;
+
+// ---- Avståndsberäkning (Haversine) ----
 const haversineKm = (a, b) => {
   const toRad = d => d * Math.PI / 180, R = 6371;
   const dLat = toRad(b.lat - a.lat), dLon = toRad(b.lng - a.lng);
@@ -19,6 +24,8 @@ const haversineKm = (a, b) => {
   const h = Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)**2;
   return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
 };
+const applyFreeRadius = (rawKm) => Math.max(0, rawKm - FREE_RADIUS_KM);
+
 const makeCode = () => String(Math.floor(100000 + Math.random()*900000)); // 6 siffror
 const room = id => `game:${id}`;
 
@@ -50,7 +57,7 @@ function endRound(gameId) {
   const results = [];
   for (const [pid, p] of g.players) {
     const guess = guesses.get(pid);
-    const km = guess ? guess.km : g.penaltyKm;
+    const km = guess ? guess.km : g.penaltyKm; // penaltypåslag om ingen gissning
     p.totalKm += km;
     results.push({
       name: p.name,
@@ -74,7 +81,7 @@ io.on('connection', (socket) => {
   socket.data.playerId = null;
 
   // HOST: skapa spel -> få kod (default 20s ronder)
-  socket.on('host:createGame', ({ roundTimeSec = 20, penaltyKm = 20000 } = {}) => {
+  socket.on('host:createGame', ({ roundTimeSec = DEFAULT_ROUND_SEC, penaltyKm = DEFAULT_PENALTY_KM } = {}) => {
     const gameId = `${Date.now()}-${Math.floor(Math.random()*1000)}`;
     let code; do { code = makeCode(); } while (gamesByCode.has(code));
 
@@ -91,7 +98,7 @@ io.on('connection', (socket) => {
     socket.data.gameId = gameId;
     socket.join(room(gameId));
 
-    socket.emit('game:created', { gameId, code, roundTimeSec, penaltyKm });
+    socket.emit('game:created', { gameId, code, roundTimeSec, penaltyKm, freeRadiusKm: FREE_RADIUS_KM });
     io.to(room(gameId)).emit('lobby:update', { players: [...game.players.values()] });
   });
 
@@ -148,7 +155,7 @@ io.on('connection', (socket) => {
     };
 
     io.to(room(gameId)).emit('round:started', {
-      round: g.round, cityName: g.current.cityName, deadlineAt
+      round: g.round, cityName: g.current.cityName, deadlineAt, freeRadiusKm: FREE_RADIUS_KM
     });
 
     g.timer = setTimeout(() => endRound(gameId), g.roundTimeSec * 1000);
@@ -162,9 +169,12 @@ io.on('connection', (socket) => {
     if (!pid || !g.players.has(pid)) return;
     if (g.current.guesses.has(pid)) return;
 
-    const km = haversineKm({ lat, lng }, g.current.target);
-    g.current.guesses.set(pid, { lat, lng, km, at: Date.now() });
-    socket.emit('guess:accepted', { km: +km.toFixed(1) });
+    // 1) Rådistans, 2) applicera 10 km frizon
+    const rawKm = haversineKm({ lat, lng }, g.current.target);
+    const adjKm = applyFreeRadius(rawKm);
+
+    g.current.guesses.set(pid, { lat, lng, km: adjKm, at: Date.now() });
+    socket.emit('guess:accepted', { km: +adjKm.toFixed(1), rawKm: +rawKm.toFixed(1), freeKm: FREE_RADIUS_KM });
 
     if (g.current.guesses.size >= g.players.size) {
       if (g.timer) clearTimeout(g.timer);
@@ -179,6 +189,7 @@ io.on('connection', (socket) => {
     g.state = 'lobby';
     io.to(room(gameId)).emit('lobby:ready');
   });
+
   socket.on('host:endGame', ({ gameId }) => {
     const g = gamesById.get(gameId);
     if (!g || socket.id !== g.host) return;
