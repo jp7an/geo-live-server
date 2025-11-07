@@ -356,12 +356,8 @@ io.on('connection', (socket) => {
       firstGuess: existingGuess ? existingGuess.firstGuess : { lat, lng }
     });
 
-    // Only end round early if all players have made at least one guess (not on updates)
-    const playersWithGuesses = new Set(g.current.guesses.keys());
-    if (playersWithGuesses.size >= g.players.size && isFirstGuess) {
-      if (g.timer) clearTimeout(g.timer);
-      endRound(gameId);
-    }
+    // Note: We no longer end the round early when all players have guessed,
+    // since players can now update their guesses until time runs out
   });
 
   // ---- HOST: nästa runda ----
