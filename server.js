@@ -11,6 +11,8 @@ const express = require('express');
 const http = require('http');
 const cors = require('cors');
 const { Server } = require('socket.io');
+const fs = require('fs');
+const path = require('path');
 
 const app = express();
 app.use(cors());
@@ -30,6 +32,17 @@ const DEFAULT_ROUND_SEC = 20;
 const DEFAULT_FREE_RADIUS_KM = 10;
 const DEFAULT_PENALTY_KM = 20000;
 const HOST_GRACE_MS = 3 * 60 * 1000; // 3 min för host att återta spelet
+
+// ======= Läs städer från cities.json =======
+let citiesData = [];
+try {
+  const citiesPath = path.join(__dirname, 'cities.json');
+  const rawData = fs.readFileSync(citiesPath, 'utf8');
+  citiesData = JSON.parse(rawData);
+  console.log(`Laddade ${citiesData.length} städer från cities.json`);
+} catch (error) {
+  console.error('Kunde inte läsa cities.json:', error.message);
+}
 
 // ======= Hjälp =======
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -71,6 +84,51 @@ async function geocodeCity(name) {
     return { name, lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
   }
   throw new Error('Hittade inte stad');
+}
+
+// ======= Slumpmässig stadsval för slumpmässigt läge =======
+function selectRandomCities() {
+  // Filtrera städer med population > 500000
+  const validCities = citiesData.filter(city => city.population > 500000);
+  
+  // Dela upp städer per kontinent
+  const europeCities = validCities.filter(c => c.continent === 'Europe');
+  const northAmericaCities = validCities.filter(c => c.continent === 'North America');
+  const otherCities = validCities.filter(c => 
+    c.continent !== 'Europe' && c.continent !== 'North America'
+  );
+  
+  // Slumpmässigt välj städer
+  const selected = [];
+  
+  // 4 från Europa
+  const europeSelected = [];
+  while (europeSelected.length < 4 && europeCities.length > 0) {
+    const idx = Math.floor(Math.random() * europeCities.length);
+    europeSelected.push(europeCities[idx]);
+    europeCities.splice(idx, 1);
+  }
+  selected.push(...europeSelected);
+  
+  // 4 från Nordamerika
+  const naSelected = [];
+  while (naSelected.length < 4 && northAmericaCities.length > 0) {
+    const idx = Math.floor(Math.random() * northAmericaCities.length);
+    naSelected.push(northAmericaCities[idx]);
+    northAmericaCities.splice(idx, 1);
+  }
+  selected.push(...naSelected);
+  
+  // 2 från resten av världen
+  const otherSelected = [];
+  while (otherSelected.length < 2 && otherCities.length > 0) {
+    const idx = Math.floor(Math.random() * otherCities.length);
+    otherSelected.push(otherCities[idx]);
+    otherCities.splice(idx, 1);
+  }
+  selected.push(...otherSelected);
+  
+  return selected;
 }
 
 // ======= Runda-slut =======
@@ -217,6 +275,23 @@ io.on('connection', (socket) => {
     });
 
     g.timer = setTimeout(() => endRound(gameId), g.settings.roundTimeSec * 1000);
+  });
+
+  // ---- HOST: starta slumpmässigt spel ----
+  socket.on('startRandomGame', ({ gameId }) => {
+    const g = gamesById.get(gameId);
+    if (!g || socket.id !== g.host) return;
+    
+    // Välj slumpmässiga städer
+    const selectedCities = selectRandomCities();
+    
+    if (selectedCities.length === 0) {
+      socket.emit('round:error', { message: 'Inga städer tillgängliga' });
+      return;
+    }
+    
+    // Skicka städerna till alla klienter i rummet
+    io.to(room(gameId)).emit('random:cities', { cities: selectedCities });
   });
 
   // ---- SPELARE: gissa ----
