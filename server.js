@@ -330,14 +330,35 @@ io.on('connection', (socket) => {
     if (!g || g.state !== 'in_round') return;
     const pid = socket.data.playerId;
     if (!pid || !g.players.has(pid)) return;
-    if (g.current.guesses.has(pid)) return;
 
     const rawKm = haversineKm({ lat, lng }, g.current.target);
     const adjKm = Math.max(0, rawKm - g.settings.freeRadiusKm); // frizon
-    g.current.guesses.set(pid, { lat, lng, km: adjKm, rawKm, at: Date.now() });
-    socket.emit('guess:accepted', { km: +adjKm.toFixed(1), rawKm: +rawKm.toFixed(1), freeKm: g.settings.freeRadiusKm });
+    
+    // Check if this is a new guess or an update
+    const existingGuess = g.current.guesses.get(pid);
+    const isFirstGuess = !existingGuess;
+    
+    // Store the guess with first guess position if it's an update
+    g.current.guesses.set(pid, { 
+      lat, 
+      lng, 
+      km: adjKm, 
+      rawKm, 
+      at: Date.now(),
+      firstGuess: existingGuess ? existingGuess.firstGuess : { lat, lng, at: Date.now() }
+    });
+    
+    socket.emit('guess:accepted', { 
+      km: +adjKm.toFixed(1), 
+      rawKm: +rawKm.toFixed(1), 
+      freeKm: g.settings.freeRadiusKm,
+      isUpdate: !isFirstGuess,
+      firstGuess: existingGuess ? existingGuess.firstGuess : { lat, lng }
+    });
 
-    if (g.current.guesses.size >= g.players.size) {
+    // Only end round early if all players have made at least one guess (not on updates)
+    const playersWithGuesses = new Set(g.current.guesses.keys());
+    if (playersWithGuesses.size >= g.players.size && isFirstGuess) {
       if (g.timer) clearTimeout(g.timer);
       endRound(gameId);
     }
