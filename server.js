@@ -17,7 +17,13 @@ app.use(cors());
 app.get('/health', (req, res) => res.json({ ok: true }));
 
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: '*' } });
+const io = new Server(server, {
+  cors: { origin: '*' },
+  pingTimeout: 60000,
+  pingInterval: 25000,
+  connectTimeout: 60000,
+  transports: ['websocket', 'polling']
+});
 
 // ======= Konstanter / standarder =======
 const DEFAULT_ROUND_SEC = 20;
@@ -101,6 +107,9 @@ io.on('connection', (socket) => {
   socket.data.role = null;
   socket.data.gameId = null;
   socket.data.playerId = null;
+  
+  // Acknowledge connection
+  socket.emit('connected', { socketId: socket.id });
 
   // ---- HOST: skapa spel ----
   socket.on('host:createGame', (payload = {}) => {
