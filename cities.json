@@ -446,5 +446,1333 @@
     "population": 1657200,
     "lat": -36.8485,
     "lng": 174.7633
+  },
+  {
+    "name": "Lisbon",
+    "country": "Portugal",
+    "continent": "Europe",
+    "population": 505526,
+    "lat": 38.7223,
+    "lng": -9.1393
+  },
+  {
+    "name": "Dublin",
+    "country": "Ireland",
+    "continent": "Europe",
+    "population": 1173179,
+    "lat": 53.3498,
+    "lng": -6.2603
+  },
+  {
+    "name": "Copenhagen",
+    "country": "Denmark",
+    "continent": "Europe",
+    "population": 794128,
+    "lat": 55.6761,
+    "lng": 12.5683
+  },
+  {
+    "name": "Oslo",
+    "country": "Norway",
+    "continent": "Europe",
+    "population": 709037,
+    "lat": 59.9139,
+    "lng": 10.7522
+  },
+  {
+    "name": "Helsinki",
+    "country": "Finland",
+    "continent": "Europe",
+    "population": 658864,
+    "lat": 60.1695,
+    "lng": 24.9354
+  },
+  {
+    "name": "Athens",
+    "country": "Greece",
+    "continent": "Europe",
+    "population": 664046,
+    "lat": 37.9838,
+    "lng": 23.7275
+  },
+  {
+    "name": "Bucharest",
+    "country": "Romania",
+    "continent": "Europe",
+    "population": 1883425,
+    "lat": 44.4268,
+    "lng": 26.1025
+  },
+  {
+    "name": "Sofia",
+    "country": "Bulgaria",
+    "continent": "Europe",
+    "population": 1242568,
+    "lat": 42.6977,
+    "lng": 23.3219
+  },
+  {
+    "name": "Zagreb",
+    "country": "Croatia",
+    "continent": "Europe",
+    "population": 769944,
+    "lat": 45.8150,
+    "lng": 15.9819
+  },
+  {
+    "name": "Belgrade",
+    "country": "Serbia",
+    "continent": "Europe",
+    "population": 1197714,
+    "lat": 44.7866,
+    "lng": 20.4489
+  },
+  {
+    "name": "Kyiv",
+    "country": "Ukraine",
+    "continent": "Europe",
+    "population": 2962180,
+    "lat": 50.4501,
+    "lng": 30.5234
+  },
+  {
+    "name": "Moscow",
+    "country": "Russia",
+    "continent": "Europe",
+    "population": 12692466,
+    "lat": 55.7558,
+    "lng": 37.6173
+  },
+  {
+    "name": "Saint Petersburg",
+    "country": "Russia",
+    "continent": "Europe",
+    "population": 5384342,
+    "lat": 59.9311,
+    "lng": 30.3609
+  },
+  {
+    "name": "Milan",
+    "country": "Italy",
+    "continent": "Europe",
+    "population": 1396059,
+    "lat": 45.4642,
+    "lng": 9.1900
+  },
+  {
+    "name": "Naples",
+    "country": "Italy",
+    "continent": "Europe",
+    "population": 967069,
+    "lat": 40.8518,
+    "lng": 14.2681
+  },
+  {
+    "name": "Turin",
+    "country": "Italy",
+    "continent": "Europe",
+    "population": 870456,
+    "lat": 45.0703,
+    "lng": 7.6869
+  },
+  {
+    "name": "Marseille",
+    "country": "France",
+    "continent": "Europe",
+    "population": 870731,
+    "lat": 43.2965,
+    "lng": 5.3698
+  },
+  {
+    "name": "Lyon",
+    "country": "France",
+    "continent": "Europe",
+    "population": 516092,
+    "lat": 45.7640,
+    "lng": 4.8357
+  },
+  {
+    "name": "Toulouse",
+    "country": "France",
+    "continent": "Europe",
+    "population": 479553,
+    "lat": 43.6047,
+    "lng": 1.4442
+  },
+  {
+    "name": "Cologne",
+    "country": "Germany",
+    "continent": "Europe",
+    "population": 1085664,
+    "lat": 50.9375,
+    "lng": 6.9603
+  },
+  {
+    "name": "Frankfurt",
+    "country": "Germany",
+    "continent": "Europe",
+    "population": 753056,
+    "lat": 50.1109,
+    "lng": 8.6821
+  },
+  {
+    "name": "Stuttgart",
+    "country": "Germany",
+    "continent": "Europe",
+    "population": 634830,
+    "lat": 48.7758,
+    "lng": 9.1829
+  },
+  {
+    "name": "Dortmund",
+    "country": "Germany",
+    "continent": "Europe",
+    "population": 587010,
+    "lat": 51.5136,
+    "lng": 7.4653
+  },
+  {
+    "name": "Essen",
+    "country": "Germany",
+    "continent": "Europe",
+    "population": 583109,
+    "lat": 51.4556,
+    "lng": 7.0116
+  },
+  {
+    "name": "Düsseldorf",
+    "country": "Germany",
+    "continent": "Europe",
+    "population": 621877,
+    "lat": 51.2277,
+    "lng": 6.7735
+  },
+  {
+    "name": "Manchester",
+    "country": "United Kingdom",
+    "continent": "Europe",
+    "population": 547627,
+    "lat": 53.4808,
+    "lng": -2.2426
+  },
+  {
+    "name": "Birmingham",
+    "country": "United Kingdom",
+    "continent": "Europe",
+    "population": 1141816,
+    "lat": 52.4862,
+    "lng": -1.8904
+  },
+  {
+    "name": "Glasgow",
+    "country": "United Kingdom",
+    "continent": "Europe",
+    "population": 633120,
+    "lat": 55.8642,
+    "lng": -4.2518
+  },
+  {
+    "name": "Edinburgh",
+    "country": "United Kingdom",
+    "continent": "Europe",
+    "population": 524930,
+    "lat": 55.9533,
+    "lng": -3.1883
+  },
+  {
+    "name": "Seville",
+    "country": "Spain",
+    "continent": "Europe",
+    "population": 688711,
+    "lat": 37.3891,
+    "lng": -5.9845
+  },
+  {
+    "name": "Valencia",
+    "country": "Spain",
+    "continent": "Europe",
+    "population": 794288,
+    "lat": 39.4699,
+    "lng": -0.3763
+  },
+  {
+    "name": "Bilbao",
+    "country": "Spain",
+    "continent": "Europe",
+    "population": 345821,
+    "lat": 43.2630,
+    "lng": -2.9350
+  },
+  {
+    "name": "Kraków",
+    "country": "Poland",
+    "continent": "Europe",
+    "population": 779115,
+    "lat": 50.0647,
+    "lng": 19.9450
+  },
+  {
+    "name": "Wrocław",
+    "country": "Poland",
+    "continent": "Europe",
+    "population": 643782,
+    "lat": 51.1079,
+    "lng": 17.0385
+  },
+  {
+    "name": "Rotterdam",
+    "country": "Netherlands",
+    "continent": "Europe",
+    "population": 651446,
+    "lat": 51.9225,
+    "lng": 4.4792
+  },
+  {
+    "name": "The Hague",
+    "country": "Netherlands",
+    "continent": "Europe",
+    "population": 545163,
+    "lat": 52.0705,
+    "lng": 4.3007
+  },
+  {
+    "name": "Zürich",
+    "country": "Switzerland",
+    "continent": "Europe",
+    "population": 421878,
+    "lat": 47.3769,
+    "lng": 8.5417
+  },
+  {
+    "name": "Geneva",
+    "country": "Switzerland",
+    "continent": "Europe",
+    "population": 201818,
+    "lat": 46.2044,
+    "lng": 6.1432
+  },
+  {
+    "name": "Gothenburg",
+    "country": "Sweden",
+    "continent": "Europe",
+    "population": 579281,
+    "lat": 57.7089,
+    "lng": 11.9746
+  },
+  {
+    "name": "Malmö",
+    "country": "Sweden",
+    "continent": "Europe",
+    "population": 347949,
+    "lat": 55.6050,
+    "lng": 13.0038
+  },
+  {
+    "name": "Boston",
+    "country": "United States",
+    "continent": "North America",
+    "population": 692600,
+    "lat": 42.3601,
+    "lng": -71.0589
+  },
+  {
+    "name": "Seattle",
+    "country": "United States",
+    "continent": "North America",
+    "population": 753675,
+    "lat": 47.6062,
+    "lng": -122.3321
+  },
+  {
+    "name": "Denver",
+    "country": "United States",
+    "continent": "North America",
+    "population": 715522,
+    "lat": 39.7392,
+    "lng": -104.9903
+  },
+  {
+    "name": "Washington",
+    "country": "United States",
+    "continent": "North America",
+    "population": 705749,
+    "lat": 38.9072,
+    "lng": -77.0369
+  },
+  {
+    "name": "Atlanta",
+    "country": "United States",
+    "continent": "North America",
+    "population": 498715,
+    "lat": 33.7490,
+    "lng": -84.3880
+  },
+  {
+    "name": "Miami",
+    "country": "United States",
+    "continent": "North America",
+    "population": 467963,
+    "lat": 25.7617,
+    "lng": -80.1918
+  },
+  {
+    "name": "Minneapolis",
+    "country": "United States",
+    "continent": "North America",
+    "population": 425336,
+    "lat": 44.9778,
+    "lng": -93.2650
+  },
+  {
+    "name": "Detroit",
+    "country": "United States",
+    "continent": "North America",
+    "population": 639111,
+    "lat": 42.3314,
+    "lng": -83.0458
+  },
+  {
+    "name": "Las Vegas",
+    "country": "United States",
+    "continent": "North America",
+    "population": 641903,
+    "lat": 36.1699,
+    "lng": -115.1398
+  },
+  {
+    "name": "Portland",
+    "country": "United States",
+    "continent": "North America",
+    "population": 652503,
+    "lat": 45.5152,
+    "lng": -122.6784
+  },
+  {
+    "name": "San Francisco",
+    "country": "United States",
+    "continent": "North America",
+    "population": 873965,
+    "lat": 37.7749,
+    "lng": -122.4194
+  },
+  {
+    "name": "San Jose",
+    "country": "United States",
+    "continent": "North America",
+    "population": 1021795,
+    "lat": 37.3382,
+    "lng": -121.8863
+  },
+  {
+    "name": "Austin",
+    "country": "United States",
+    "continent": "North America",
+    "population": 961855,
+    "lat": 30.2672,
+    "lng": -97.7431
+  },
+  {
+    "name": "Columbus",
+    "country": "United States",
+    "continent": "North America",
+    "population": 905748,
+    "lat": 39.9612,
+    "lng": -82.9988
+  },
+  {
+    "name": "Charlotte",
+    "country": "United States",
+    "continent": "North America",
+    "population": 885708,
+    "lat": 35.2271,
+    "lng": -80.8431
+  },
+  {
+    "name": "Nashville",
+    "country": "United States",
+    "continent": "North America",
+    "population": 689447,
+    "lat": 36.1627,
+    "lng": -86.7816
+  },
+  {
+    "name": "Baltimore",
+    "country": "United States",
+    "continent": "North America",
+    "population": 585708,
+    "lat": 39.2904,
+    "lng": -76.6122
+  },
+  {
+    "name": "Milwaukee",
+    "country": "United States",
+    "continent": "North America",
+    "population": 577222,
+    "lat": 43.0389,
+    "lng": -87.9065
+  },
+  {
+    "name": "Calgary",
+    "country": "Canada",
+    "continent": "North America",
+    "population": 1306784,
+    "lat": 51.0447,
+    "lng": -114.0719
+  },
+  {
+    "name": "Ottawa",
+    "country": "Canada",
+    "continent": "North America",
+    "population": 1017449,
+    "lat": 45.4215,
+    "lng": -75.6972
+  },
+  {
+    "name": "Edmonton",
+    "country": "Canada",
+    "continent": "North America",
+    "population": 981280,
+    "lat": 53.5461,
+    "lng": -113.4938
+  },
+  {
+    "name": "Winnipeg",
+    "country": "Canada",
+    "continent": "North America",
+    "population": 749607,
+    "lat": 49.8951,
+    "lng": -97.1384
+  },
+  {
+    "name": "Quebec City",
+    "country": "Canada",
+    "continent": "North America",
+    "population": 549459,
+    "lat": 46.8139,
+    "lng": -71.2080
+  },
+  {
+    "name": "Monterrey",
+    "country": "Mexico",
+    "continent": "North America",
+    "population": 1135512,
+    "lat": 25.6866,
+    "lng": -100.3161
+  },
+  {
+    "name": "Puebla",
+    "country": "Mexico",
+    "continent": "North America",
+    "population": 1692181,
+    "lat": 19.0414,
+    "lng": -98.2063
+  },
+  {
+    "name": "Tijuana",
+    "country": "Mexico",
+    "continent": "North America",
+    "population": 1810645,
+    "lat": 32.5149,
+    "lng": -117.0382
+  },
+  {
+    "name": "Havana",
+    "country": "Cuba",
+    "continent": "North America",
+    "population": 2130081,
+    "lat": 23.1136,
+    "lng": -82.3666
+  },
+  {
+    "name": "Panama City",
+    "country": "Panama",
+    "continent": "North America",
+    "population": 880691,
+    "lat": 8.9824,
+    "lng": -79.5199
+  },
+  {
+    "name": "Guatemala City",
+    "country": "Guatemala",
+    "continent": "North America",
+    "population": 994938,
+    "lat": 14.6349,
+    "lng": -90.5069
+  },
+  {
+    "name": "San José",
+    "country": "Costa Rica",
+    "continent": "North America",
+    "population": 333980,
+    "lat": 9.9281,
+    "lng": -84.0907
+  },
+  {
+    "name": "Osaka",
+    "country": "Japan",
+    "continent": "Asia",
+    "population": 2725006,
+    "lat": 34.6937,
+    "lng": 135.5023
+  },
+  {
+    "name": "Yokohama",
+    "country": "Japan",
+    "continent": "Asia",
+    "population": 3748905,
+    "lat": 35.4437,
+    "lng": 139.6380
+  },
+  {
+    "name": "Nagoya",
+    "country": "Japan",
+    "continent": "Asia",
+    "population": 2320361,
+    "lat": 35.1815,
+    "lng": 136.9066
+  },
+  {
+    "name": "Sapporo",
+    "country": "Japan",
+    "continent": "Asia",
+    "population": 1973395,
+    "lat": 43.0642,
+    "lng": 141.3469
+  },
+  {
+    "name": "Fukuoka",
+    "country": "Japan",
+    "continent": "Asia",
+    "population": 1595674,
+    "lat": 33.5904,
+    "lng": 130.4017
+  },
+  {
+    "name": "Kobe",
+    "country": "Japan",
+    "continent": "Asia",
+    "population": 1544873,
+    "lat": 34.6901,
+    "lng": 135.1955
+  },
+  {
+    "name": "Bangalore",
+    "country": "India",
+    "continent": "Asia",
+    "population": 8443675,
+    "lat": 12.9716,
+    "lng": 77.5946
+  },
+  {
+    "name": "Hyderabad",
+    "country": "India",
+    "continent": "Asia",
+    "population": 6809970,
+    "lat": 17.3850,
+    "lng": 78.4867
+  },
+  {
+    "name": "Chennai",
+    "country": "India",
+    "continent": "Asia",
+    "population": 7088000,
+    "lat": 13.0827,
+    "lng": 80.2707
+  },
+  {
+    "name": "Kolkata",
+    "country": "India",
+    "continent": "Asia",
+    "population": 4496694,
+    "lat": 22.5726,
+    "lng": 88.3639
+  },
+  {
+    "name": "Pune",
+    "country": "India",
+    "continent": "Asia",
+    "population": 3124458,
+    "lat": 18.5204,
+    "lng": 73.8567
+  },
+  {
+    "name": "Ahmedabad",
+    "country": "India",
+    "continent": "Asia",
+    "population": 5577940,
+    "lat": 23.0225,
+    "lng": 72.5714
+  },
+  {
+    "name": "Jaipur",
+    "country": "India",
+    "continent": "Asia",
+    "population": 3046163,
+    "lat": 26.9124,
+    "lng": 75.7873
+  },
+  {
+    "name": "Guangzhou",
+    "country": "China",
+    "continent": "Asia",
+    "population": 13080500,
+    "lat": 23.1291,
+    "lng": 113.2644
+  },
+  {
+    "name": "Shenzhen",
+    "country": "China",
+    "continent": "Asia",
+    "population": 12528300,
+    "lat": 22.5431,
+    "lng": 114.0579
+  },
+  {
+    "name": "Chongqing",
+    "country": "China",
+    "continent": "Asia",
+    "population": 15872179,
+    "lat": 29.4316,
+    "lng": 106.9123
+  },
+  {
+    "name": "Tianjin",
+    "country": "China",
+    "continent": "Asia",
+    "population": 13866009,
+    "lat": 39.3434,
+    "lng": 117.3616
+  },
+  {
+    "name": "Wuhan",
+    "country": "China",
+    "continent": "Asia",
+    "population": 8896900,
+    "lat": 30.5928,
+    "lng": 114.3055
+  },
+  {
+    "name": "Chengdu",
+    "country": "China",
+    "continent": "Asia",
+    "population": 8813000,
+    "lat": 30.5728,
+    "lng": 104.0668
+  },
+  {
+    "name": "Nanjing",
+    "country": "China",
+    "continent": "Asia",
+    "population": 8505500,
+    "lat": 32.0603,
+    "lng": 118.7969
+  },
+  {
+    "name": "Xi'an",
+    "country": "China",
+    "continent": "Asia",
+    "population": 8705600,
+    "lat": 34.2658,
+    "lng": 108.9541
+  },
+  {
+    "name": "Hangzhou",
+    "country": "China",
+    "continent": "Asia",
+    "population": 10360000,
+    "lat": 30.2741,
+    "lng": 120.1551
+  },
+  {
+    "name": "Hong Kong",
+    "country": "Hong Kong",
+    "continent": "Asia",
+    "population": 7496981,
+    "lat": 22.3193,
+    "lng": 114.1694
+  },
+  {
+    "name": "Taipei",
+    "country": "Taiwan",
+    "continent": "Asia",
+    "population": 2646204,
+    "lat": 25.0330,
+    "lng": 121.5654
+  },
+  {
+    "name": "Busan",
+    "country": "South Korea",
+    "continent": "Asia",
+    "population": 3448737,
+    "lat": 35.1796,
+    "lng": 129.0756
+  },
+  {
+    "name": "Incheon",
+    "country": "South Korea",
+    "continent": "Asia",
+    "population": 2954955,
+    "lat": 37.4563,
+    "lng": 126.7052
+  },
+  {
+    "name": "Manila",
+    "country": "Philippines",
+    "continent": "Asia",
+    "population": 1780148,
+    "lat": 14.5995,
+    "lng": 120.9842
+  },
+  {
+    "name": "Jakarta",
+    "country": "Indonesia",
+    "continent": "Asia",
+    "population": 10562088,
+    "lat": -6.2088,
+    "lng": 106.8456
+  },
+  {
+    "name": "Surabaya",
+    "country": "Indonesia",
+    "continent": "Asia",
+    "population": 2874699,
+    "lat": -7.2575,
+    "lng": 112.7521
+  },
+  {
+    "name": "Bandung",
+    "country": "Indonesia",
+    "continent": "Asia",
+    "population": 2444160,
+    "lat": -6.9175,
+    "lng": 107.6191
+  },
+  {
+    "name": "Ho Chi Minh City",
+    "country": "Vietnam",
+    "continent": "Asia",
+    "population": 8993082,
+    "lat": 10.8231,
+    "lng": 106.6297
+  },
+  {
+    "name": "Hanoi",
+    "country": "Vietnam",
+    "continent": "Asia",
+    "population": 8053663,
+    "lat": 21.0285,
+    "lng": 105.8542
+  },
+  {
+    "name": "Kuala Lumpur",
+    "country": "Malaysia",
+    "continent": "Asia",
+    "population": 1982112,
+    "lat": 3.1390,
+    "lng": 101.6869
+  },
+  {
+    "name": "Yangon",
+    "country": "Myanmar",
+    "continent": "Asia",
+    "population": 5209541,
+    "lat": 16.8661,
+    "lng": 96.1951
+  },
+  {
+    "name": "Riyadh",
+    "country": "Saudi Arabia",
+    "continent": "Asia",
+    "population": 7676654,
+    "lat": 24.7136,
+    "lng": 46.6753
+  },
+  {
+    "name": "Jeddah",
+    "country": "Saudi Arabia",
+    "continent": "Asia",
+    "population": 4697000,
+    "lat": 21.5433,
+    "lng": 39.1728
+  },
+  {
+    "name": "Tehran",
+    "country": "Iran",
+    "continent": "Asia",
+    "population": 8896000,
+    "lat": 35.6892,
+    "lng": 51.3890
+  },
+  {
+    "name": "Baghdad",
+    "country": "Iraq",
+    "continent": "Asia",
+    "population": 7216040,
+    "lat": 33.3152,
+    "lng": 44.3661
+  },
+  {
+    "name": "Ankara",
+    "country": "Turkey",
+    "continent": "Asia",
+    "population": 5663322,
+    "lat": 39.9334,
+    "lng": 32.8597
+  },
+  {
+    "name": "Izmir",
+    "country": "Turkey",
+    "continent": "Asia",
+    "population": 2972900,
+    "lat": 38.4237,
+    "lng": 27.1428
+  },
+  {
+    "name": "Abu Dhabi",
+    "country": "United Arab Emirates",
+    "continent": "Asia",
+    "population": 1482816,
+    "lat": 24.4539,
+    "lng": 54.3773
+  },
+  {
+    "name": "Tel Aviv",
+    "country": "Israel",
+    "continent": "Asia",
+    "population": 460613,
+    "lat": 32.0853,
+    "lng": 34.7818
+  },
+  {
+    "name": "Jerusalem",
+    "country": "Israel",
+    "continent": "Asia",
+    "population": 936425,
+    "lat": 31.7683,
+    "lng": 35.2137
+  },
+  {
+    "name": "Almaty",
+    "country": "Kazakhstan",
+    "continent": "Asia",
+    "population": 2039376,
+    "lat": 43.2220,
+    "lng": 76.8512
+  },
+  {
+    "name": "Tashkent",
+    "country": "Uzbekistan",
+    "continent": "Asia",
+    "population": 2571668,
+    "lat": 41.2995,
+    "lng": 69.2401
+  },
+  {
+    "name": "Karachi",
+    "country": "Pakistan",
+    "continent": "Asia",
+    "population": 14910352,
+    "lat": 24.8607,
+    "lng": 67.0011
+  },
+  {
+    "name": "Lahore",
+    "country": "Pakistan",
+    "continent": "Asia",
+    "population": 11126285,
+    "lat": 31.5497,
+    "lng": 74.3436
+  },
+  {
+    "name": "Dhaka",
+    "country": "Bangladesh",
+    "continent": "Asia",
+    "population": 8906039,
+    "lat": 23.8103,
+    "lng": 90.4125
+  },
+  {
+    "name": "Colombo",
+    "country": "Sri Lanka",
+    "continent": "Asia",
+    "population": 752993,
+    "lat": 6.9271,
+    "lng": 79.8612
+  },
+  {
+    "name": "Brasília",
+    "country": "Brazil",
+    "continent": "South America",
+    "population": 3055149,
+    "lat": -15.8267,
+    "lng": -47.9218
+  },
+  {
+    "name": "Belo Horizonte",
+    "country": "Brazil",
+    "continent": "South America",
+    "population": 2521564,
+    "lat": -19.9167,
+    "lng": -43.9345
+  },
+  {
+    "name": "Salvador",
+    "country": "Brazil",
+    "continent": "South America",
+    "population": 2886698,
+    "lat": -12.9714,
+    "lng": -38.5014
+  },
+  {
+    "name": "Fortaleza",
+    "country": "Brazil",
+    "continent": "South America",
+    "population": 2686612,
+    "lat": -3.7319,
+    "lng": -38.5267
+  },
+  {
+    "name": "Recife",
+    "country": "Brazil",
+    "continent": "South America",
+    "population": 1653461,
+    "lat": -8.0476,
+    "lng": -34.8770
+  },
+  {
+    "name": "Curitiba",
+    "country": "Brazil",
+    "continent": "South America",
+    "population": 1948626,
+    "lat": -25.4284,
+    "lng": -49.2733
+  },
+  {
+    "name": "Manaus",
+    "country": "Brazil",
+    "continent": "South America",
+    "population": 2219580,
+    "lat": -3.1190,
+    "lng": -60.0217
+  },
+  {
+    "name": "Córdoba",
+    "country": "Argentina",
+    "continent": "South America",
+    "population": 1391000,
+    "lat": -31.4201,
+    "lng": -64.1888
+  },
+  {
+    "name": "Rosario",
+    "country": "Argentina",
+    "continent": "South America",
+    "population": 948312,
+    "lat": -32.9442,
+    "lng": -60.6505
+  },
+  {
+    "name": "Montevideo",
+    "country": "Uruguay",
+    "continent": "South America",
+    "population": 1319108,
+    "lat": -34.9011,
+    "lng": -56.1645
+  },
+  {
+    "name": "Medellín",
+    "country": "Colombia",
+    "continent": "South America",
+    "population": 2508452,
+    "lat": 6.2476,
+    "lng": -75.5658
+  },
+  {
+    "name": "Cali",
+    "country": "Colombia",
+    "continent": "South America",
+    "population": 2227642,
+    "lat": 3.4516,
+    "lng": -76.5320
+  },
+  {
+    "name": "Barranquilla",
+    "country": "Colombia",
+    "continent": "South America",
+    "population": 1205769,
+    "lat": 10.9639,
+    "lng": -74.7964
+  },
+  {
+    "name": "Quito",
+    "country": "Ecuador",
+    "continent": "South America",
+    "population": 1978376,
+    "lat": -0.1807,
+    "lng": -78.4678
+  },
+  {
+    "name": "Guayaquil",
+    "country": "Ecuador",
+    "continent": "South America",
+    "population": 2698077,
+    "lat": -2.1709,
+    "lng": -79.9224
+  },
+  {
+    "name": "La Paz",
+    "country": "Bolivia",
+    "continent": "South America",
+    "population": 816044,
+    "lat": -16.5000,
+    "lng": -68.1500
+  },
+  {
+    "name": "Santa Cruz",
+    "country": "Bolivia",
+    "continent": "South America",
+    "population": 1453549,
+    "lat": -17.8146,
+    "lng": -63.1560
+  },
+  {
+    "name": "Asunción",
+    "country": "Paraguay",
+    "continent": "South America",
+    "population": 524287,
+    "lat": -25.2637,
+    "lng": -57.5759
+  },
+  {
+    "name": "Casablanca",
+    "country": "Morocco",
+    "continent": "Africa",
+    "population": 3359818,
+    "lat": 33.5731,
+    "lng": -7.5898
+  },
+  {
+    "name": "Rabat",
+    "country": "Morocco",
+    "continent": "Africa",
+    "population": 577827,
+    "lat": 34.0209,
+    "lng": -6.8416
+  },
+  {
+    "name": "Algiers",
+    "country": "Algeria",
+    "continent": "Africa",
+    "population": 2364230,
+    "lat": 36.7538,
+    "lng": 3.0588
+  },
+  {
+    "name": "Tunis",
+    "country": "Tunisia",
+    "continent": "Africa",
+    "population": 638845,
+    "lat": 36.8065,
+    "lng": 10.1815
+  },
+  {
+    "name": "Tripoli",
+    "country": "Libya",
+    "continent": "Africa",
+    "population": 1165000,
+    "lat": 32.8872,
+    "lng": 13.1913
+  },
+  {
+    "name": "Alexandria",
+    "country": "Egypt",
+    "continent": "Africa",
+    "population": 5200000,
+    "lat": 31.2001,
+    "lng": 29.9187
+  },
+  {
+    "name": "Giza",
+    "country": "Egypt",
+    "continent": "Africa",
+    "population": 8800000,
+    "lat": 30.0131,
+    "lng": 31.2089
+  },
+  {
+    "name": "Khartoum",
+    "country": "Sudan",
+    "continent": "Africa",
+    "population": 5274321,
+    "lat": 15.5007,
+    "lng": 32.5599
+  },
+  {
+    "name": "Addis Ababa",
+    "country": "Ethiopia",
+    "continent": "Africa",
+    "population": 3384569,
+    "lat": 9.0320,
+    "lng": 38.7469
+  },
+  {
+    "name": "Abidjan",
+    "country": "Ivory Coast",
+    "continent": "Africa",
+    "population": 4707404,
+    "lat": 5.3600,
+    "lng": -4.0083
+  },
+  {
+    "name": "Dakar",
+    "country": "Senegal",
+    "continent": "Africa",
+    "population": 1146053,
+    "lat": 14.6937,
+    "lng": -17.4441
+  },
+  {
+    "name": "Accra",
+    "country": "Ghana",
+    "continent": "Africa",
+    "population": 2291352,
+    "lat": 5.6037,
+    "lng": -0.1870
+  },
+  {
+    "name": "Dar es Salaam",
+    "country": "Tanzania",
+    "continent": "Africa",
+    "population": 6048000,
+    "lat": -6.7924,
+    "lng": 39.2083
+  },
+  {
+    "name": "Luanda",
+    "country": "Angola",
+    "continent": "Africa",
+    "population": 8325000,
+    "lat": -8.8383,
+    "lng": 13.2344
+  },
+  {
+    "name": "Kampala",
+    "country": "Uganda",
+    "continent": "Africa",
+    "population": 1680000,
+    "lat": 0.3476,
+    "lng": 32.5825
+  },
+  {
+    "name": "Lusaka",
+    "country": "Zambia",
+    "continent": "Africa",
+    "population": 2467000,
+    "lat": -15.4167,
+    "lng": 28.2833
+  },
+  {
+    "name": "Harare",
+    "country": "Zimbabwe",
+    "continent": "Africa",
+    "population": 1542813,
+    "lat": -17.8252,
+    "lng": 31.0335
+  },
+  {
+    "name": "Maputo",
+    "country": "Mozambique",
+    "continent": "Africa",
+    "population": 1101170,
+    "lat": -25.9655,
+    "lng": 32.5832
+  },
+  {
+    "name": "Antananarivo",
+    "country": "Madagascar",
+    "continent": "Africa",
+    "population": 1275207,
+    "lat": -18.8792,
+    "lng": 47.5079
+  },
+  {
+    "name": "Durban",
+    "country": "South Africa",
+    "continent": "Africa",
+    "population": 595061,
+    "lat": -29.8587,
+    "lng": 31.0218
+  },
+  {
+    "name": "Pretoria",
+    "country": "South Africa",
+    "continent": "Africa",
+    "population": 741651,
+    "lat": -25.7479,
+    "lng": 28.2293
+  },
+  {
+    "name": "Perth",
+    "country": "Australia",
+    "continent": "Oceania",
+    "population": 2085973,
+    "lat": -31.9505,
+    "lng": 115.8605
+  },
+  {
+    "name": "Adelaide",
+    "country": "Australia",
+    "continent": "Oceania",
+    "population": 1345777,
+    "lat": -34.9285,
+    "lng": 138.6007
+  },
+  {
+    "name": "Gold Coast",
+    "country": "Australia",
+    "continent": "Oceania",
+    "population": 679127,
+    "lat": -28.0167,
+    "lng": 153.4000
+  },
+  {
+    "name": "Canberra",
+    "country": "Australia",
+    "continent": "Oceania",
+    "population": 426704,
+    "lat": -35.2809,
+    "lng": 149.1300
+  },
+  {
+    "name": "Wellington",
+    "country": "New Zealand",
+    "continent": "Oceania",
+    "population": 215100,
+    "lat": -41.2865,
+    "lng": 174.7762
+  },
+  {
+    "name": "Christchurch",
+    "country": "New Zealand",
+    "continent": "Oceania",
+    "population": 389300,
+    "lat": -43.5320,
+    "lng": 172.6306
+  },
+  {
+    "name": "Suva",
+    "country": "Fiji",
+    "continent": "Oceania",
+    "population": 93970,
+    "lat": -18.1248,
+    "lng": 178.4501
+  },
+  {
+    "name": "Port Moresby",
+    "country": "Papua New Guinea",
+    "continent": "Oceania",
+    "population": 364125,
+    "lat": -9.4438,
+    "lng": 147.1803
   }
 ]
