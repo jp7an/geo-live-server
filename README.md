@@ -22,7 +22,7 @@ The random game mode automatically selects cities for the game based on predefin
 
 **New Event: `startRandomGame`**
 - **Direction:** Client → Server
-- **Payload:** `{ gameId: string }`
+- **Payload:** `{ gameId?: string }` (optional - server uses socket's stored gameId as fallback)
 - **Description:** Triggers random city selection for the game
 - **Permission:** Only the host can trigger this event
 
@@ -76,8 +76,13 @@ socket.emit('host:createGame', {});
 socket.on('game:created', (data) => {
   const { gameId } = data;
   
-  // Trigger random game mode
+  // Trigger random game mode (two ways to do this):
+  
+  // Option 1: Explicitly provide gameId
   socket.emit('startRandomGame', { gameId });
+  
+  // Option 2: Omit gameId (server uses socket's stored gameId)
+  socket.emit('startRandomGame', {});
 });
 
 // Receive the selected cities

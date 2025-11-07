@@ -260,9 +260,24 @@ io.on('connection', (socket) => {
   });
 
   // ---- HOST: starta slumpmässigt spel ----
-  socket.on('startRandomGame', ({ gameId }) => {
+  socket.on('startRandomGame', (payload = {}) => {
+    // Använd gameId från payload eller från socket.data som fallback
+    const gameId = payload.gameId || socket.data.gameId;
+    if (!gameId) {
+      socket.emit('round:error', { message: 'Inget gameId angivet' });
+      return;
+    }
+    
     const g = gamesById.get(gameId);
-    if (!g || socket.id !== g.host) return;
+    if (!g) {
+      socket.emit('round:error', { message: 'Spelet hittades inte' });
+      return;
+    }
+    
+    if (socket.id !== g.host) {
+      socket.emit('round:error', { message: 'Endast host kan starta slumpmässigt spel' });
+      return;
+    }
     
     // Välj slumpmässiga städer
     const selectedCities = selectRandomCities();
