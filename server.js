@@ -98,35 +98,17 @@ function selectRandomCities() {
     c.continent !== 'Europe' && c.continent !== 'North America'
   );
   
+  // Hjälpfunktion för slumpmässigt urval utan duplicering
+  const randomSelect = (arr, count) => {
+    const shuffled = [...arr].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, Math.min(count, arr.length));
+  };
+  
   // Slumpmässigt välj städer
   const selected = [];
-  
-  // 4 från Europa
-  const europeSelected = [];
-  while (europeSelected.length < 4 && europeCities.length > 0) {
-    const idx = Math.floor(Math.random() * europeCities.length);
-    europeSelected.push(europeCities[idx]);
-    europeCities.splice(idx, 1);
-  }
-  selected.push(...europeSelected);
-  
-  // 4 från Nordamerika
-  const naSelected = [];
-  while (naSelected.length < 4 && northAmericaCities.length > 0) {
-    const idx = Math.floor(Math.random() * northAmericaCities.length);
-    naSelected.push(northAmericaCities[idx]);
-    northAmericaCities.splice(idx, 1);
-  }
-  selected.push(...naSelected);
-  
-  // 2 från resten av världen
-  const otherSelected = [];
-  while (otherSelected.length < 2 && otherCities.length > 0) {
-    const idx = Math.floor(Math.random() * otherCities.length);
-    otherSelected.push(otherCities[idx]);
-    otherCities.splice(idx, 1);
-  }
-  selected.push(...otherSelected);
+  selected.push(...randomSelect(europeCities, 4));
+  selected.push(...randomSelect(northAmericaCities, 4));
+  selected.push(...randomSelect(otherCities, 2));
   
   return selected;
 }
@@ -284,6 +266,10 @@ io.on('connection', (socket) => {
     
     // Välj slumpmässiga städer
     const selectedCities = selectRandomCities();
+    
+    if (selectedCities.length < 10) {
+      console.warn(`Varning: Kunde endast välja ${selectedCities.length} av 10 städer`);
+    }
     
     if (selectedCities.length === 0) {
       socket.emit('round:error', { message: 'Inga städer tillgängliga' });
