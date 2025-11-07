@@ -338,14 +338,20 @@ io.on('connection', (socket) => {
     const existingGuess = g.current.guesses.get(pid);
     const isFirstGuess = !existingGuess;
     
-    // Store the guess with first guess position if it's an update
+    // Determine first guess position (preserve existing or set new)
+    const firstGuessTimestamp = Date.now();
+    const firstGuessData = existingGuess 
+      ? existingGuess.firstGuess 
+      : { lat, lng, at: firstGuessTimestamp };
+    
+    // Store the guess with first guess position
     g.current.guesses.set(pid, { 
       lat, 
       lng, 
       km: adjKm, 
       rawKm, 
-      at: Date.now(),
-      firstGuess: existingGuess ? existingGuess.firstGuess : { lat, lng, at: Date.now() }
+      at: firstGuessTimestamp,
+      firstGuess: firstGuessData
     });
     
     socket.emit('guess:accepted', { 
@@ -353,7 +359,7 @@ io.on('connection', (socket) => {
       rawKm: +rawKm.toFixed(1), 
       freeKm: g.settings.freeRadiusKm,
       isUpdate: !isFirstGuess,
-      firstGuess: existingGuess ? existingGuess.firstGuess : { lat, lng }
+      firstGuess: firstGuessData
     });
 
     // Note: We no longer end the round early when all players have guessed,
