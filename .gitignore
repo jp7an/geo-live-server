@@ -5,3 +5,6 @@ package-lock.json
 test-random-cities.js
 test-integration.js
 IMPLEMENTATION_SUMMARY.md
+test-client.js
+test-client-detailed.js
+test-comprehensive.js

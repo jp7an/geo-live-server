@@ -66,7 +66,8 @@ const room = id => `game:${id}`;
  *  settings: { roundTimeSec, freeRadiusKm, penaltyKm },
  *  players: Map<playerId, { id, name, totalKm, socketId }>,
  *  current: { cityName, target:{lat,lng}, startedAt, deadlineAt, guesses: Map<playerId, {lat,lng,km,rawKm,at}> } | null,
- *  timer: NodeJS.Timeout | null
+ *  timer: NodeJS.Timeout | null,
+ *  randomGameCities: Array<City> | null
  * }
  */
 const gamesById = new Map();
@@ -174,7 +175,8 @@ io.on('connection', (socket) => {
       settings: { roundTimeSec, freeRadiusKm, penaltyKm },
       players: new Map(),
       current: null,
-      timer: null
+      timer: null,
+      randomGameCities: null
     };
     gamesById.set(gameId, game);
     gamesByCode.set(code, gameId);
@@ -291,8 +293,35 @@ io.on('connection', (socket) => {
       return;
     }
     
+    // Spara städerna i spelet
+    g.randomGameCities = selectedCities;
+    
     // Skicka städerna till alla klienter i rummet
     io.to(room(gameId)).emit('random:cities', { cities: selectedCities });
+    
+    // Starta första rundan automatiskt med första staden
+    const firstCity = selectedCities[0];
+    if (g.timer) clearTimeout(g.timer);
+    g.round += 1;
+    const startedAt = Date.now();
+    const deadlineAt = startedAt + g.settings.roundTimeSec * 1000;
+    g.state = 'in_round';
+    g.current = {
+      cityName: firstCity.name,
+      target: { lat: firstCity.lat, lng: firstCity.lng },
+      startedAt,
+      deadlineAt,
+      guesses: new Map()
+    };
+
+    io.to(room(gameId)).emit('round:started', {
+      round: g.round,
+      cityName: g.current.cityName,
+      deadlineAt,
+      freeRadiusKm: g.settings.freeRadiusKm
+    });
+
+    g.timer = setTimeout(() => endRound(gameId), g.settings.roundTimeSec * 1000);
   });
 
   // ---- SPELARE: gissa ----
@@ -343,6 +372,7 @@ io.on('connection', (socket) => {
     g.state = 'lobby';
     g.round = 0;
     g.current = null;
+    g.randomGameCities = null;
     for (const p of g.players.values()) p.totalKm = 0;
     io.to(room(gameId)).emit('game:reset', { players: [...g.players.values()].map(p => ({ id:p.id, name:p.name, totalKm:p.totalKm })) });
   });
