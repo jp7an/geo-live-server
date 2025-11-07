@@ -4,3 +4,4 @@ package-lock.json
 *.log
 test-random-cities.js
 test-integration.js
+IMPLEMENTATION_SUMMARY.md
