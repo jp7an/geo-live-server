@@ -494,5 +494,463 @@ io.on('connection', (socket) => {
   });
 });
 
+// ======================================================================
+// ========================= LAGLÄGE (TEAM MODE) ========================
+// ======================================================================
+
+// ======= "Databas" för lagspel =======
+/**
+ * teamGame = {
+ *   id, code, host (socketId|null), hostToken,
+ *   state: 'lobby' | 'drawing' | 'showing_results' | 'finished',
+ *   totalRounds: number,        // antal fulla omgångar (standard 12)
+ *   currentRound: number,       // aktuell full omgång (1-baserad)
+ *   currentTeamIndex: number,   // vilket lags tur det är (0-baserad)
+ *   scoringMode: 'average' | 'best',
+ *   teams: Array<{
+ *     id: string,
+ *     name: string,
+ *     players: Array<{ id, name, socketId, totalKm }>,
+ *     totalKm: number,
+ *     drawerIndex: number
+ *   }>,
+ *   current: {
+ *     cityName: string,
+ *     target: { lat, lng },
+ *     drawingTeamIndex: number,
+ *     drawerPlayerId: string,
+ *     guesses: Map<playerId, { lat, lng, km }>
+ *   } | null
+ * }
+ */
+const teamGamesById = new Map();
+const teamGamesByCode = new Map();
+
+// ======= Hjälp för lagspel =======
+const teamRoom = id => `teamgame:${id}`;
+
+// ======= Stadsval för lagläge (population > 100 000) =======
+function selectTeamCities(count = 3) {
+  const validCities = citiesData.filter(city => city.population > 100000);
+  // Fisher-Yates shuffle för korrekt slumpmässigt urval
+  const arr = [...validCities];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr.slice(0, Math.min(count, arr.length));
+}
+
+// ======= Avsluta delomgång =======
+function endTeamSubRound(gameId) {
+  const g = teamGamesById.get(gameId);
+  if (!g || !g.current) return;
+
+  const activeTeam = g.teams[g.current.drawingTeamIndex];
+  const { target, guesses } = g.current;
+
+  // Samla gissningar från lagets gissare (ej ritaren)
+  const guessResults = [];
+  for (const player of activeTeam.players) {
+    if (player.id === g.current.drawerPlayerId) continue; // hoppa över ritaren
+    const guess = guesses.get(player.id);
+    if (guess) {
+      guessResults.push({ name: player.name, km: +guess.km.toFixed(1) });
+    }
+  }
+
+  // Räkna ut lagets poäng
+  let teamScore;
+  if (guessResults.length === 0) {
+    teamScore = DEFAULT_PENALTY_KM; // ingen gissade → maxstraff
+  } else if (g.scoringMode === 'best') {
+    teamScore = Math.min(...guessResults.map(r => r.km));
+  } else {
+    // 'average'
+    teamScore = guessResults.reduce((sum, r) => sum + r.km, 0) / guessResults.length;
+  }
+  teamScore = +teamScore.toFixed(1);
+
+  // Lägg till lagets poäng
+  activeTeam.totalKm += teamScore;
+
+  g.state = 'showing_results';
+
+  io.to(teamRoom(gameId)).emit('team:subRoundResults', {
+    teamName: activeTeam.name,
+    guesses: guessResults,
+    teamScore,
+    target: { lat: target.lat, lng: target.lng, name: g.current.cityName },
+    teams: g.teams.map(t => ({ name: t.name, totalKm: +t.totalKm.toFixed(1) }))
+  });
+}
+
+// ======= Socket.io – lagspel =======
+io.on('connection', (socket) => {
+
+  // ---- HOST: skapa lagspel ----
+  socket.on('host:createTeamGame', (payload = {}) => {
+    const { totalRounds = 12, scoringMode = 'average', teams: teamsInput = [] } = payload;
+
+    // Validera antal lag
+    if (!Array.isArray(teamsInput) || teamsInput.length < 2 || teamsInput.length > 5) {
+      socket.emit('teamGame:error', { message: 'Antal lag måste vara mellan 2 och 5.' });
+      return;
+    }
+
+    // Validera lag och spelare
+    for (const t of teamsInput) {
+      if (!Array.isArray(t.playerNames) || t.playerNames.length < 2 || t.playerNames.length > 3) {
+        socket.emit('teamGame:error', { message: `Lag "${t.name}" måste ha 2–3 spelare.` });
+        return;
+      }
+    }
+
+    // Validera att spelarnamn är unika över alla lag (case-insensitive)
+    const allPlayerNames = teamsInput.flatMap(t => t.playerNames.map(n => (n || '').trim().toLowerCase()));
+    const uniqueNames = new Set(allPlayerNames);
+    if (uniqueNames.size !== allPlayerNames.length) {
+      socket.emit('teamGame:error', { message: 'Alla spelarnamn måste vara unika.' });
+      return;
+    }
+
+    const gameId = `tg-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    let code;
+    do { code = makeCode(); } while (teamGamesByCode.has(code));
+    const hostToken = makeHostToken();
+
+    const teams = teamsInput.map((t, ti) => ({
+      id: `team-${ti}`,
+      name: (t.name || `Lag ${ti + 1}`).trim(),
+      players: t.playerNames.map((pname, pi) => ({
+        id: `tp-${ti}-${pi}-${Math.random().toString(36).slice(2, 6)}`,
+        name: (pname || `Spelare ${pi + 1}`).trim(),
+        socketId: null,
+        totalKm: 0
+      })),
+      totalKm: 0,
+      drawerIndex: 0
+    }));
+
+    const game = {
+      id: gameId,
+      code,
+      host: socket.id,
+      hostToken,
+      state: 'lobby',
+      totalRounds: Math.max(1, parseInt(totalRounds, 10) || 12),
+      currentRound: 0,
+      currentTeamIndex: 0,
+      scoringMode: scoringMode === 'best' ? 'best' : 'average',
+      teams,
+      current: null
+    };
+
+    teamGamesById.set(gameId, game);
+    teamGamesByCode.set(code, gameId);
+
+    socket.data.teamGameId = gameId;
+    socket.join(teamRoom(gameId));
+
+    socket.emit('teamGame:created', {
+      gameId,
+      code,
+      hostToken,
+      teams: teams.map(t => ({ id: t.id, name: t.name, players: t.players.map(p => ({ id: p.id, name: p.name })) })),
+      totalRounds: game.totalRounds,
+      scoringMode: game.scoringMode
+    });
+
+    io.to(teamRoom(gameId)).emit('teamLobby:update', {
+      teams: teams.map(t => ({ id: t.id, name: t.name, players: t.players.map(p => ({ id: p.id, name: p.name, connected: !!p.socketId })) }))
+    });
+  });
+
+  // ---- SPELARE: gå med i lagspel ----
+  socket.on('player:joinTeam', ({ code, name }) => {
+    const gameId = teamGamesByCode.get(code);
+    const g = teamGamesById.get(gameId);
+    if (!g || g.state === 'finished') {
+      socket.emit('join:error', { message: 'Ingen aktiv lagmatch med den koden.' });
+      return;
+    }
+
+    // Hitta spelaren i något lag baserat på namn (case-insensitive)
+    let foundTeam = null;
+    let foundPlayer = null;
+    for (const team of g.teams) {
+      for (const player of team.players) {
+        if (player.name.toLowerCase() === (name || '').trim().toLowerCase() && !player.socketId) {
+          foundTeam = team;
+          foundPlayer = player;
+          break;
+        }
+      }
+      if (foundPlayer) break;
+    }
+
+    if (!foundPlayer) {
+      socket.emit('join:error', { message: 'Hittade inte spelaren i laget, kontrollera ditt namn.' });
+      return;
+    }
+
+    // Koppla socket till spelaren
+    foundPlayer.socketId = socket.id;
+    socket.data.teamGameId = gameId;
+    socket.data.teamPlayerId = foundPlayer.id;
+    socket.data.teamTeamId = foundTeam.id;
+    socket.join(teamRoom(gameId));
+
+    socket.emit('player:teamJoined', {
+      gameId,
+      playerId: foundPlayer.id,
+      teamId: foundTeam.id,
+      teamName: foundTeam.name
+    });
+
+    io.to(teamRoom(gameId)).emit('teamLobby:update', {
+      teams: g.teams.map(t => ({
+        id: t.id,
+        name: t.name,
+        players: t.players.map(p => ({ id: p.id, name: p.name, connected: !!p.socketId }))
+      }))
+    });
+  });
+
+  // ---- HOST: starta lagspel ----
+  socket.on('host:startTeamGame', ({ gameId }) => {
+    const g = teamGamesById.get(gameId);
+    if (!g || socket.id !== g.host) return;
+    if (g.state !== 'lobby') return;
+
+    // Starta första delomgången
+    _startNextTeamSubRound(g, gameId);
+  });
+
+  // ---- Ritaren väljer stad ----
+  socket.on('team:chooseCity', ({ gameId, cityIndex }) => {
+    const g = teamGamesById.get(gameId);
+    if (!g || g.state !== 'drawing') return;
+    if (!g.current) return;
+
+    const pid = socket.data.teamPlayerId;
+    if (pid !== g.current.drawerPlayerId) return; // bara ritaren
+
+    if (!g.current.cityChoices || cityIndex < 0 || cityIndex >= g.current.cityChoices.length) return;
+
+    const chosen = g.current.cityChoices[cityIndex];
+    g.current.cityName = chosen.name;
+    g.current.target = { lat: chosen.lat, lng: chosen.lng };
+    g.current.cityChoices = null; // rensa valen
+
+    // Bekräfta till ritaren
+    socket.emit('team:cityChosen', { cityName: chosen.name });
+
+    // Meddela alla UTOM ritaren att ritandet börjar (utan att avslöja stadens namn)
+    const activeTeam = g.teams[g.current.drawingTeamIndex];
+    const drawer = activeTeam.players.find(p => p.id === g.current.drawerPlayerId);
+    socket.to(teamRoom(gameId)).emit('team:drawingStarted', {
+      drawerName: drawer ? drawer.name : 'Okänd',
+      teamName: activeTeam.name
+    });
+  });
+
+  // ---- Rita i realtid ----
+  socket.on('team:draw', ({ gameId, x, y, drawing, color, lineWidth }) => {
+    const g = teamGamesById.get(gameId);
+    if (!g || g.state !== 'drawing') return;
+    if (!g.current) return;
+
+    const pid = socket.data.teamPlayerId;
+    if (pid !== g.current.drawerPlayerId) return; // bara ritaren
+
+    socket.to(teamRoom(gameId)).emit('team:draw', {
+      x, y, drawing, color, lineWidth,
+      drawerId: pid
+    });
+  });
+
+  // ---- Rensa ritningen ----
+  socket.on('team:clearCanvas', ({ gameId }) => {
+    const g = teamGamesById.get(gameId);
+    if (!g || g.state !== 'drawing') return;
+    if (!g.current) return;
+
+    const pid = socket.data.teamPlayerId;
+    if (pid !== g.current.drawerPlayerId) return; // bara ritaren
+
+    io.to(teamRoom(gameId)).emit('team:clearCanvas', {});
+  });
+
+  // ---- Gissare placerar nål ----
+  socket.on('team:submitGuess', ({ gameId, lat, lng }) => {
+    const g = teamGamesById.get(gameId);
+    if (!g || g.state !== 'drawing') return;
+    if (!g.current) return;
+
+    const pid = socket.data.teamPlayerId;
+    if (!pid) return;
+
+    // Kontrollera att spelaren är i det aktiva laget
+    const activeTeam = g.teams[g.current.drawingTeamIndex];
+    const isInActiveTeam = activeTeam.players.some(p => p.id === pid);
+    if (!isInActiveTeam) return; // motståndarlaget kan inte gissa
+
+    // Ritaren kan inte gissa
+    if (pid === g.current.drawerPlayerId) return;
+
+    // Kräv att stad är vald
+    if (!g.current.target) return;
+
+    const km = haversineKm({ lat, lng }, g.current.target);
+    g.current.guesses.set(pid, { lat, lng, km: +km.toFixed(1) });
+
+    socket.emit('team:guessAccepted', { km: +km.toFixed(1) });
+
+    // Kontrollera om alla gissare i aktiva laget har gissat
+    const guessers = activeTeam.players.filter(p => p.id !== g.current.drawerPlayerId);
+    const allGuessed = guessers.every(p => g.current.guesses.has(p.id));
+    if (allGuessed) {
+      endTeamSubRound(gameId);
+    }
+  });
+
+  // ---- HOST: nästa delomgång ----
+  socket.on('host:nextTeamSubRound', ({ gameId }) => {
+    const g = teamGamesById.get(gameId);
+    if (!g || socket.id !== g.host) return;
+    if (g.state !== 'showing_results') return;
+
+    // Gå till nästa lag
+    g.currentTeamIndex++;
+
+    // Om alla lag har haft sin tur i denna omgång → ny full omgång
+    if (g.currentTeamIndex >= g.teams.length) {
+      g.currentTeamIndex = 0;
+      g.currentRound++;
+      // Rotera ritarens index för varje lag
+      for (const team of g.teams) {
+        team.drawerIndex = (team.drawerIndex + 1) % team.players.length;
+      }
+    }
+
+    // Kontrollera om spelet är slut
+    if (g.currentRound > g.totalRounds) {
+      _endTeamGame(g, gameId);
+      return;
+    }
+
+    _startNextTeamSubRound(g, gameId);
+  });
+
+  // ---- HOST: avsluta lagspelet ----
+  socket.on('host:endTeamGame', ({ gameId }) => {
+    const g = teamGamesById.get(gameId);
+    if (!g || socket.id !== g.host) return;
+    _endTeamGame(g, gameId);
+  });
+
+  // ---- DISCONNECT (lagläge) ----
+  socket.on('disconnect', () => {
+    const tgid = socket.data.teamGameId;
+    if (!tgid) return;
+    const g = teamGamesById.get(tgid);
+    if (!g) return;
+
+    const pid = socket.data.teamPlayerId;
+    if (pid) {
+      // Rensa spelarens socketId vid frånkoppling (de kan återansluta)
+      for (const team of g.teams) {
+        const player = team.players.find(p => p.id === pid);
+        if (player && player.socketId === socket.id) {
+          player.socketId = null;
+          io.to(teamRoom(tgid)).emit('teamLobby:update', {
+            teams: g.teams.map(t => ({
+              id: t.id,
+              name: t.name,
+              players: t.players.map(p => ({ id: p.id, name: p.name, connected: !!p.socketId }))
+            }))
+          });
+          break;
+        }
+      }
+
+      // Om ritaren kopplade ifrån under drawing → meddela host och avsluta delomgången
+      if (g.state === 'drawing' && g.current && pid === g.current.drawerPlayerId) {
+        const hostSocket = g.host ? io.sockets.sockets.get(g.host) : null;
+        if (hostSocket) {
+          hostSocket.emit('team:drawerDisconnected', { drawerPlayerId: pid });
+        }
+        endTeamSubRound(tgid);
+      }
+      // Om en gissare kopplade ifrån → kontrollera om alla kvarvarande har gissat
+      else if (g.state === 'drawing' && g.current) {
+        const activeTeam = g.teams[g.current.drawingTeamIndex];
+        const connectedGuessers = activeTeam.players.filter(
+          p => p.id !== g.current.drawerPlayerId && p.socketId
+        );
+        if (connectedGuessers.length > 0 &&
+            connectedGuessers.every(p => g.current.guesses.has(p.id))) {
+          endTeamSubRound(tgid);
+        }
+      }
+    }
+  });
+
+});
+
+// ======= Intern: starta nästa delomgång =======
+function _startNextTeamSubRound(g, gameId) {
+  const team = g.teams[g.currentTeamIndex];
+  const drawer = team.players[team.drawerIndex]; // drawerIndex roteras alltid med modulo i host:nextTeamSubRound
+
+  // Om currentRound är 0 (första start), sätt till 1
+  if (g.currentRound === 0) g.currentRound = 1;
+
+  // Välj 3 slumpmässiga städer privat till ritaren
+  const cityChoices = selectTeamCities(3);
+
+  g.state = 'drawing';
+  g.current = {
+    cityName: null,
+    target: null,
+    drawingTeamIndex: g.currentTeamIndex,
+    drawerPlayerId: drawer.id,
+    guesses: new Map(),
+    cityChoices
+  };
+
+  // Skicka stadsvalen privat till ritaren
+  const drawerSocket = drawer.socketId ? io.sockets.sockets.get(drawer.socketId) : null;
+  if (drawerSocket) {
+    drawerSocket.emit('team:cityChoices', {
+      cities: cityChoices.map(c => ({ name: c.name, lat: c.lat, lng: c.lng }))
+    });
+  }
+
+  // Meddela alla om ny delomgång
+  io.to(teamRoom(gameId)).emit('team:roundStarted', {
+    round: g.currentRound,
+    totalRounds: g.totalRounds,
+    drawingTeamName: team.name,
+    drawerName: drawer.name,
+    teamIndex: g.currentTeamIndex
+  });
+}
+
+// ======= Intern: avsluta spelet =======
+function _endTeamGame(g, gameId) {
+  g.state = 'finished';
+  const leaderboard = [...g.teams]
+    .sort((a, b) => a.totalKm - b.totalKm)
+    .map((t, i) => ({ teamName: t.name, totalKm: +t.totalKm.toFixed(1), rank: i + 1 }));
+
+  io.to(teamRoom(gameId)).emit('teamGame:final', { leaderboard });
+}
+
+// ======================================================================
+// ========================= SERVER START ===============================
+// ======================================================================
+
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Server igång: http://localhost:${PORT}`));
