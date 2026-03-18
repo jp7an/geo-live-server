@@ -555,7 +555,23 @@ function endTeamSubRound(gameId) {
     if (player.id === g.current.drawerPlayerId) continue; // hoppa över ritaren
     const guess = guesses.get(player.id);
     if (guess) {
-      guessResults.push({ name: player.name, km: +guess.km.toFixed(1) });
+      guessResults.push({
+        playerName: player.name,
+        km: +guess.km.toFixed(1),
+        guess: { lat: guess.lat, lng: guess.lng }
+      });
+    }
+  }
+
+  // Lägg till spelare som INTE gissade (om scoring är average → maxstraff)
+  for (const player of activeTeam.players) {
+    if (player.id === g.current.drawerPlayerId) continue;
+    if (!guesses.has(player.id)) {
+      guessResults.push({
+        playerName: player.name,
+        km: DEFAULT_PENALTY_KM,
+        guess: null
+      });
     }
   }
 
@@ -598,20 +614,12 @@ io.on('connection', (socket) => {
       return;
     }
 
-    // Validera lag och spelare
+    // Validera att varje lag har ett namn (inga spelarnamn krävs i förväg)
     for (const t of teamsInput) {
-      if (!Array.isArray(t.playerNames) || t.playerNames.length < 2 || t.playerNames.length > 3) {
-        socket.emit('teamGame:error', { message: `Lag "${t.name}" måste ha 2–3 spelare.` });
+      if (!t.name?.trim()) {
+        socket.emit('teamGame:error', { message: 'Varje lag måste ha ett namn.' });
         return;
       }
-    }
-
-    // Validera att spelarnamn är unika över alla lag (case-insensitive)
-    const allPlayerNames = teamsInput.flatMap(t => t.playerNames.map(n => (n || '').trim().toLowerCase()));
-    const uniqueNames = new Set(allPlayerNames);
-    if (uniqueNames.size !== allPlayerNames.length) {
-      socket.emit('teamGame:error', { message: 'Alla spelarnamn måste vara unika.' });
-      return;
     }
 
     const gameId = `tg-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
@@ -619,15 +627,11 @@ io.on('connection', (socket) => {
     do { code = makeCode(); } while (teamGamesByCode.has(code));
     const hostToken = makeHostToken();
 
+    // Skapa lag med tomma spelarlistor – spelare ansluter dynamiskt via spelkod
     const teams = teamsInput.map((t, ti) => ({
       id: `team-${ti}`,
       name: (t.name || `Lag ${ti + 1}`).trim(),
-      players: t.playerNames.map((pname, pi) => ({
-        id: `tp-${ti}-${pi}-${Math.random().toString(36).slice(2, 6)}`,
-        name: (pname || `Spelare ${pi + 1}`).trim(),
-        socketId: null,
-        totalKm: 0
-      })),
+      players: [],
       totalKm: 0,
       drawerIndex: 0
     }));
@@ -656,62 +660,82 @@ io.on('connection', (socket) => {
       gameId,
       code,
       hostToken,
-      teams: teams.map(t => ({ id: t.id, name: t.name, players: t.players.map(p => ({ id: p.id, name: p.name })) })),
+      teams: teams.map(t => ({ id: t.id, name: t.name, players: [] })),
       totalRounds: game.totalRounds,
       scoringMode: game.scoringMode
     });
 
     io.to(teamRoom(gameId)).emit('teamLobby:update', {
-      teams: teams.map(t => ({ id: t.id, name: t.name, players: t.players.map(p => ({ id: p.id, name: p.name, connected: !!p.socketId })) }))
+      teams: teams.map(t => ({ id: t.id, name: t.name, maxPlayers: 3, players: [] }))
     });
   });
 
-  // ---- SPELARE: gå med i lagspel ----
-  socket.on('player:joinTeam', ({ code, name }) => {
+  // ---- SPELARE: gå med i lagspel via lagval (dynamisk anslutning) ----
+  socket.on('player:joinTeamByTeamId', ({ code, name, teamId }) => {
     const gameId = teamGamesByCode.get(code);
     const g = teamGamesById.get(gameId);
+
     if (!g || g.state === 'finished') {
       socket.emit('join:error', { message: 'Ingen aktiv lagmatch med den koden.' });
       return;
     }
-
-    // Hitta spelaren i något lag baserat på namn (case-insensitive)
-    let foundTeam = null;
-    let foundPlayer = null;
-    for (const team of g.teams) {
-      for (const player of team.players) {
-        if (player.name.toLowerCase() === (name || '').trim().toLowerCase() && !player.socketId) {
-          foundTeam = team;
-          foundPlayer = player;
-          break;
-        }
-      }
-      if (foundPlayer) break;
-    }
-
-    if (!foundPlayer) {
-      socket.emit('join:error', { message: 'Hittade inte spelaren i laget, kontrollera ditt namn.' });
+    if (g.state !== 'lobby') {
+      socket.emit('join:error', { message: 'Spelet har redan startat.' });
       return;
     }
 
-    // Koppla socket till spelaren
-    foundPlayer.socketId = socket.id;
+    // Hitta laget
+    const team = g.teams.find(t => t.id === teamId);
+    if (!team) {
+      socket.emit('join:error', { message: 'Laget hittades inte.' });
+      return;
+    }
+
+    // Max 3 spelare per lag
+    if (team.players.length >= 3) {
+      socket.emit('join:error', { message: 'Laget är fullt (max 3 spelare).' });
+      return;
+    }
+
+    // Namn måste vara unikt i hela spelet (case-insensitive)
+    const trimmedName = (name || '').trim();
+    if (!trimmedName) {
+      socket.emit('join:error', { message: 'Ange ett namn.' });
+      return;
+    }
+    const allNames = new Set(g.teams.flatMap(t => t.players.map(p => p.name.toLowerCase())));
+    if (allNames.has(trimmedName.toLowerCase())) {
+      socket.emit('join:error', { message: 'Det namnet är redan taget.' });
+      return;
+    }
+
+    // Skapa och lägg till spelaren
+    const playerId = `tp-${team.id}-${Math.random().toString(36).slice(2, 8)}`;
+    const player = {
+      id: playerId,
+      name: trimmedName,
+      socketId: socket.id,
+      totalKm: 0
+    };
+    team.players.push(player);
+
     socket.data.teamGameId = gameId;
-    socket.data.teamPlayerId = foundPlayer.id;
-    socket.data.teamTeamId = foundTeam.id;
+    socket.data.teamPlayerId = playerId;
+    socket.data.teamTeamId = team.id;
     socket.join(teamRoom(gameId));
 
     socket.emit('player:teamJoined', {
       gameId,
-      playerId: foundPlayer.id,
-      teamId: foundTeam.id,
-      teamName: foundTeam.name
+      playerId,
+      teamId: team.id,
+      teamName: team.name
     });
 
     io.to(teamRoom(gameId)).emit('teamLobby:update', {
       teams: g.teams.map(t => ({
         id: t.id,
         name: t.name,
+        maxPlayers: 3,
         players: t.players.map(p => ({ id: p.id, name: p.name, connected: !!p.socketId }))
       }))
     });
@@ -722,6 +746,19 @@ io.on('connection', (socket) => {
     const g = teamGamesById.get(gameId);
     if (!g || socket.id !== g.host) return;
     if (g.state !== 'lobby') return;
+
+    // Kräv att varje lag har 2–3 spelare
+    for (const team of g.teams) {
+      if (team.players.length < 2) {
+        socket.emit('teamGame:error', { message: `Lag "${team.name}" behöver minst 2 spelare.` });
+        return;
+      }
+      // Säkerhetskontroll: mer än 3 spelare ska inte kunna förekomma (join-logiken förhindrar det)
+      if (team.players.length > 3) {
+        socket.emit('teamGame:error', { message: `Lag "${team.name}" får max ha 3 spelare.` });
+        return;
+      }
+    }
 
     // Starta första delomgången
     _startNextTeamSubRound(g, gameId);
@@ -868,6 +905,7 @@ io.on('connection', (socket) => {
             teams: g.teams.map(t => ({
               id: t.id,
               name: t.name,
+              maxPlayers: 3,
               players: t.players.map(p => ({ id: p.id, name: p.name, connected: !!p.socketId }))
             }))
           });
