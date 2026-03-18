@@ -3134,5 +3134,517 @@
     "population": 1031992,
     "lat": 37.9601,
     "lng": 58.3261
+  },
+  {
+    "name": "Uppsala",
+    "country": "Sweden",
+    "continent": "Europe",
+    "population": 230767,
+    "lat": 59.8586,
+    "lng": 17.6389
+  },
+  {
+    "name": "Västerås",
+    "country": "Sweden",
+    "continent": "Europe",
+    "population": 154049,
+    "lat": 59.6099,
+    "lng": 16.5448
+  },
+  {
+    "name": "Örebro",
+    "country": "Sweden",
+    "continent": "Europe",
+    "population": 155050,
+    "lat": 59.2741,
+    "lng": 15.2066
+  },
+  {
+    "name": "Linköping",
+    "country": "Sweden",
+    "continent": "Europe",
+    "population": 164616,
+    "lat": 58.4108,
+    "lng": 15.6214
+  },
+  {
+    "name": "Helsingborg",
+    "country": "Sweden",
+    "continent": "Europe",
+    "population": 149280,
+    "lat": 56.0465,
+    "lng": 12.6945
+  },
+  {
+    "name": "Jönköping",
+    "country": "Sweden",
+    "continent": "Europe",
+    "population": 141081,
+    "lat": 57.7826,
+    "lng": 14.1618
+  },
+  {
+    "name": "Norrköping",
+    "country": "Sweden",
+    "continent": "Europe",
+    "population": 142000,
+    "lat": 58.5877,
+    "lng": 16.1924
+  },
+  {
+    "name": "Lund",
+    "country": "Sweden",
+    "continent": "Europe",
+    "population": 124935,
+    "lat": 55.7047,
+    "lng": 13.191
+  },
+  {
+    "name": "Umeå",
+    "country": "Sweden",
+    "continent": "Europe",
+    "population": 130224,
+    "lat": 63.8258,
+    "lng": 20.263
+  },
+  {
+    "name": "Gävle",
+    "country": "Sweden",
+    "continent": "Europe",
+    "population": 103000,
+    "lat": 60.6749,
+    "lng": 17.1413
+  },
+  {
+    "name": "Borås",
+    "country": "Sweden",
+    "continent": "Europe",
+    "population": 113376,
+    "lat": 57.721,
+    "lng": 12.9401
+  },
+  {
+    "name": "Sundsvall",
+    "country": "Sweden",
+    "continent": "Europe",
+    "population": 99537,
+    "lat": 62.3908,
+    "lng": 17.3069
+  },
+  {
+    "name": "Eskilstuna",
+    "country": "Sweden",
+    "continent": "Europe",
+    "population": 106870,
+    "lat": 59.3711,
+    "lng": 16.5099
+  },
+  {
+    "name": "Halmstad",
+    "country": "Sweden",
+    "continent": "Europe",
+    "population": 101300,
+    "lat": 56.6745,
+    "lng": 12.8578
+  },
+  {
+    "name": "Växjö",
+    "country": "Sweden",
+    "continent": "Europe",
+    "population": 95459,
+    "lat": 56.8777,
+    "lng": 14.8091
+  },
+  {
+    "name": "Karlstad",
+    "country": "Sweden",
+    "continent": "Europe",
+    "population": 93700,
+    "lat": 59.3793,
+    "lng": 13.5036
+  },
+  {
+    "name": "Södertälje",
+    "country": "Sweden",
+    "continent": "Europe",
+    "population": 99400,
+    "lat": 59.1955,
+    "lng": 17.6253
+  },
+  {
+    "name": "Östersund",
+    "country": "Sweden",
+    "continent": "Europe",
+    "population": 63800,
+    "lat": 63.1792,
+    "lng": 14.6357
+  },
+  {
+    "name": "Luleå",
+    "country": "Sweden",
+    "continent": "Europe",
+    "population": 78593,
+    "lat": 65.5848,
+    "lng": 22.1567
+  },
+  {
+    "name": "Falun",
+    "country": "Sweden",
+    "continent": "Europe",
+    "population": 58400,
+    "lat": 60.6065,
+    "lng": 15.6355
+  },
+  {
+    "name": "Kalmar",
+    "country": "Sweden",
+    "continent": "Europe",
+    "population": 70000,
+    "lat": 56.6634,
+    "lng": 16.3568
+  },
+  {
+    "name": "Kristianstad",
+    "country": "Sweden",
+    "continent": "Europe",
+    "population": 84700,
+    "lat": 56.0294,
+    "lng": 14.1567
+  },
+  {
+    "name": "Skövde",
+    "country": "Sweden",
+    "continent": "Europe",
+    "population": 56400,
+    "lat": 58.3905,
+    "lng": 13.845
+  },
+  {
+    "name": "Trollhättan",
+    "country": "Sweden",
+    "continent": "Europe",
+    "population": 57800,
+    "lat": 58.2837,
+    "lng": 12.2886
+  },
+  {
+    "name": "Visby",
+    "country": "Sweden",
+    "continent": "Europe",
+    "population": 24200,
+    "lat": 57.6348,
+    "lng": 18.2948
+  },
+  {
+    "name": "Kiruna",
+    "country": "Sweden",
+    "continent": "Europe",
+    "population": 23400,
+    "lat": 67.8557,
+    "lng": 20.2253
+  },
+  {
+    "name": "Karlskrona",
+    "country": "Sweden",
+    "continent": "Europe",
+    "population": 66800,
+    "lat": 56.1612,
+    "lng": 15.5869
+  },
+  {
+    "name": "Lidköping",
+    "country": "Sweden",
+    "continent": "Europe",
+    "population": 39100,
+    "lat": 58.505,
+    "lng": 13.1574
+  },
+  {
+    "name": "Porto",
+    "country": "Portugal",
+    "continent": "Europe",
+    "population": 249633,
+    "lat": 41.1579,
+    "lng": -8.6291
+  },
+  {
+    "name": "Antwerp",
+    "country": "Belgium",
+    "continent": "Europe",
+    "population": 531892,
+    "lat": 51.2194,
+    "lng": 4.4025
+  },
+  {
+    "name": "Bern",
+    "country": "Switzerland",
+    "continent": "Europe",
+    "population": 133791,
+    "lat": 46.948,
+    "lng": 7.4474
+  },
+  {
+    "name": "Aarhus",
+    "country": "Denmark",
+    "continent": "Europe",
+    "population": 349983,
+    "lat": 56.1629,
+    "lng": 10.2039
+  },
+  {
+    "name": "Tampere",
+    "country": "Finland",
+    "continent": "Europe",
+    "population": 238140,
+    "lat": 61.4978,
+    "lng": 23.761
+  },
+  {
+    "name": "Turku",
+    "country": "Finland",
+    "continent": "Europe",
+    "population": 193838,
+    "lat": 60.4518,
+    "lng": 22.2666
+  },
+  {
+    "name": "Lodz",
+    "country": "Poland",
+    "continent": "Europe",
+    "population": 672185,
+    "lat": 51.7592,
+    "lng": 19.456
+  },
+  {
+    "name": "Poznan",
+    "country": "Poland",
+    "continent": "Europe",
+    "population": 549408,
+    "lat": 52.4064,
+    "lng": 16.9252
+  },
+  {
+    "name": "Sarajevo",
+    "country": "Bosnia and Herzegovina",
+    "continent": "Europe",
+    "population": 275524,
+    "lat": 43.8564,
+    "lng": 18.4131
+  },
+  {
+    "name": "Skopje",
+    "country": "North Macedonia",
+    "continent": "Europe",
+    "population": 544086,
+    "lat": 41.9973,
+    "lng": 21.428
+  },
+  {
+    "name": "Tirana",
+    "country": "Albania",
+    "continent": "Europe",
+    "population": 895169,
+    "lat": 41.3317,
+    "lng": 19.8319
+  },
+  {
+    "name": "Ljubljana",
+    "country": "Slovenia",
+    "continent": "Europe",
+    "population": 295504,
+    "lat": 46.0569,
+    "lng": 14.5058
+  },
+  {
+    "name": "Bratislava",
+    "country": "Slovakia",
+    "continent": "Europe",
+    "population": 475503,
+    "lat": 48.1486,
+    "lng": 17.1077
+  },
+  {
+    "name": "Vilnius",
+    "country": "Lithuania",
+    "continent": "Europe",
+    "population": 592459,
+    "lat": 54.6872,
+    "lng": 25.2797
+  },
+  {
+    "name": "Riga",
+    "country": "Latvia",
+    "continent": "Europe",
+    "population": 605802,
+    "lat": 56.9496,
+    "lng": 24.1052
+  },
+  {
+    "name": "Tallinn",
+    "country": "Estonia",
+    "continent": "Europe",
+    "population": 437619,
+    "lat": 59.437,
+    "lng": 24.7536
+  },
+  {
+    "name": "Minsk",
+    "country": "Belarus",
+    "continent": "Europe",
+    "population": 2009786,
+    "lat": 53.9045,
+    "lng": 27.5615
+  },
+  {
+    "name": "Reykjavik",
+    "country": "Iceland",
+    "continent": "Europe",
+    "population": 131136,
+    "lat": 64.1265,
+    "lng": -21.8174
+  },
+  {
+    "name": "Luxembourg City",
+    "country": "Luxembourg",
+    "continent": "Europe",
+    "population": 124528,
+    "lat": 49.6116,
+    "lng": 6.1319
+  },
+  {
+    "name": "Valletta",
+    "country": "Malta",
+    "continent": "Europe",
+    "population": 6444,
+    "lat": 35.8997,
+    "lng": 14.5147
+  },
+  {
+    "name": "Nicosia",
+    "country": "Cyprus",
+    "continent": "Europe",
+    "population": 330000,
+    "lat": 35.1856,
+    "lng": 33.3823
+  },
+  {
+    "name": "Podgorica",
+    "country": "Montenegro",
+    "continent": "Europe",
+    "population": 185937,
+    "lat": 42.4304,
+    "lng": 19.2594
+  },
+  {
+    "name": "Pristina",
+    "country": "Kosovo",
+    "continent": "Europe",
+    "population": 207062,
+    "lat": 42.6629,
+    "lng": 21.1655
+  },
+  {
+    "name": "Chisinau",
+    "country": "Moldova",
+    "continent": "Europe",
+    "population": 794800,
+    "lat": 47.0105,
+    "lng": 28.8638
+  },
+  {
+    "name": "Beirut",
+    "country": "Lebanon",
+    "continent": "Asia",
+    "population": 2200000,
+    "lat": 33.8938,
+    "lng": 35.5018
+  },
+  {
+    "name": "Ulaanbaatar",
+    "country": "Mongolia",
+    "continent": "Asia",
+    "population": 1466000,
+    "lat": 47.8864,
+    "lng": 106.9057
+  },
+  {
+    "name": "Bamako",
+    "country": "Mali",
+    "continent": "Africa",
+    "population": 2715000,
+    "lat": 12.6392,
+    "lng": -8.0029
+  },
+  {
+    "name": "Conakry",
+    "country": "Guinea",
+    "continent": "Africa",
+    "population": 1667864,
+    "lat": 9.537,
+    "lng": -13.6773
+  },
+  {
+    "name": "Douala",
+    "country": "Cameroon",
+    "continent": "Africa",
+    "population": 3665000,
+    "lat": 4.0511,
+    "lng": 9.7679
+  },
+  {
+    "name": "Kigali",
+    "country": "Rwanda",
+    "continent": "Africa",
+    "population": 1132686,
+    "lat": -1.9441,
+    "lng": 30.0619
+  },
+  {
+    "name": "Mogadishu",
+    "country": "Somalia",
+    "continent": "Africa",
+    "population": 2587183,
+    "lat": 2.0469,
+    "lng": 45.3182
+  },
+  {
+    "name": "Managua",
+    "country": "Nicaragua",
+    "continent": "North America",
+    "population": 1048134,
+    "lat": 12.1364,
+    "lng": -86.2514
+  },
+  {
+    "name": "Tegucigalpa",
+    "country": "Honduras",
+    "continent": "North America",
+    "population": 1444085,
+    "lat": 14.0723,
+    "lng": -87.2063
+  },
+  {
+    "name": "San Salvador",
+    "country": "El Salvador",
+    "continent": "North America",
+    "population": 567698,
+    "lat": 13.6929,
+    "lng": -89.2182
+  },
+  {
+    "name": "Georgetown",
+    "country": "Guyana",
+    "continent": "South America",
+    "population": 235017,
+    "lat": 6.8013,
+    "lng": -58.1551
+  },
+  {
+    "name": "Paramaribo",
+    "country": "Suriname",
+    "continent": "South America",
+    "population": 240924,
+    "lat": 5.852,
+    "lng": -55.2038
   }
 ]
