@@ -717,6 +717,14 @@ io.on('connection', (socket) => {
       return;
     }
 
+    // Om inget teamId angivet → spelare letar upp lobbyn utan att välja lag
+    // Gå med i socket-rummet och skicka tillbaka aktuell lobby-status
+    if (!teamId) {
+      socket.join(teamRoom(gameId));
+      socket.emit('teamLobby:update', formatTeamLobbyUpdate(g));
+      return;
+    }
+
     const trimmedName = (name || '').trim();
     if (!trimmedName) {
       socket.emit('join:error', { message: 'Ange ett namn.' });
