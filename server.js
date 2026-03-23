@@ -1055,6 +1055,396 @@ function _endTeamGame(g, gameId) {
 }
 
 // ======================================================================
+// =================== KLASSISKT LÄGE (CLASSIC MODE) ====================
+// ======================================================================
+
+// ======= Läs ord från words.json =======
+let classicWordsData = [];
+try {
+  const wordsPath = path.join(__dirname, 'words.json');
+  const rawWords = fs.readFileSync(wordsPath, 'utf8');
+  classicWordsData = JSON.parse(rawWords);
+  console.log(`Laddade ${classicWordsData.length} ord från words.json`);
+} catch (error) {
+  console.error('Kunde inte läsa words.json:', error.message);
+}
+
+// ======= "Databas" för klassiskt läge =======
+/**
+ * classicGame = {
+ *   id, code,
+ *   host: socketId,
+ *   state: 'lobby' | 'picking' | 'drawing' | 'round_end' | 'finished',
+ *   totalRoundsPerPlayer: number,
+ *   drawTimeSec: number,
+ *   players: Map<playerId, { id, name, socketId, score }>,
+ *   playerOrder: [playerId, ...],
+ *   drawerIndex: number,
+ *   roundNumber: number,
+ *   totalRounds: number,
+ *   current: {
+ *     wordOptions: string[],
+ *     word: string | null,
+ *     drawerPlayerId: string,
+ *     correctGuessers: string[],
+ *     wrongGuesses: Map<playerId, Array<{id, text}>>,
+ *     roundScores: Map<playerId, number>,
+ *   } | null,
+ *   timer: NodeJS.Timeout | null
+ * }
+ */
+const classicGamesById = new Map();
+const classicGamesByCode = new Map();
+
+const classicRoom = id => `classicgame:${id}`;
+
+function selectClassicWords(count = 5) {
+  if (!classicWordsData.length) return [];
+  const arr = [...classicWordsData];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr.slice(0, Math.min(count, arr.length));
+}
+
+function endClassicRound(gameId) {
+  const g = classicGamesById.get(gameId);
+  if (!g || !g.current) return;
+
+  if (g.timer) { clearTimeout(g.timer); g.timer = null; }
+
+  const { word, roundScores } = g.current;
+
+  // Build per-player round scores
+  const roundScoreList = [...g.players.values()].map(p => ({
+    playerId: p.id,
+    name: p.name,
+    roundPoints: roundScores.get(p.id) || 0,
+    totalPoints: p.score
+  }));
+
+  // Determine next drawer
+  const nextDrawerIndex = (g.drawerIndex + 1) % g.playerOrder.length;
+  const nextDrawerPlayerId = g.playerOrder[nextDrawerIndex];
+  const nextDrawerPlayer = g.players.get(nextDrawerPlayerId);
+
+  g.state = 'round_end';
+
+  io.to(classicRoom(gameId)).emit('classic:roundEnd', {
+    word,
+    roundScores: roundScoreList,
+    nextDrawerId: nextDrawerPlayerId,
+    nextDrawerName: nextDrawerPlayer ? nextDrawerPlayer.name : null,
+    roundNumber: g.roundNumber,
+    totalRounds: g.totalRounds
+  });
+}
+
+function _startClassicRound(g, gameId) {
+  g.roundNumber += 1;
+
+  if (g.roundNumber > g.totalRounds) {
+    g.state = 'finished';
+    const finalScores = [...g.players.values()]
+      .sort((a, b) => b.score - a.score)
+      .map((p, i) => ({ playerId: p.id, name: p.name, totalPoints: p.score, rank: i + 1 }));
+    io.to(classicRoom(gameId)).emit('classic:gameEnd', { finalScores });
+    return;
+  }
+
+  g.state = 'picking';
+  const drawerPlayerId = g.playerOrder[g.drawerIndex];
+  const drawer = g.players.get(drawerPlayerId);
+  const wordOptions = selectClassicWords(5);
+
+  g.current = {
+    wordOptions,
+    word: null,
+    drawerPlayerId,
+    correctGuessers: [],
+    wrongGuesses: new Map(),
+    roundScores: new Map()
+  };
+
+  // Send full round-start (with wordOptions) privately to the drawer
+  const drawerSocket = drawer && drawer.socketId ? io.sockets.sockets.get(drawer.socketId) : null;
+  if (drawerSocket) {
+    drawerSocket.emit('classicRound:start', {
+      roundNumber: g.roundNumber,
+      totalRounds: g.totalRounds,
+      drawerId: drawerPlayerId,
+      drawerName: drawer.name,
+      wordOptions,
+      drawTimeSec: g.drawTimeSec
+    });
+  }
+
+  // Send round-start without wordOptions to all other players
+  drawerSocket
+    ? drawerSocket.to(classicRoom(gameId)).emit('classicRound:start', {
+        roundNumber: g.roundNumber,
+        totalRounds: g.totalRounds,
+        drawerId: drawerPlayerId,
+        drawerName: drawer ? drawer.name : null,
+        drawTimeSec: g.drawTimeSec
+      })
+    : io.to(classicRoom(gameId)).emit('classicRound:start', {
+        roundNumber: g.roundNumber,
+        totalRounds: g.totalRounds,
+        drawerId: drawerPlayerId,
+        drawerName: drawer ? drawer.name : null,
+        drawTimeSec: g.drawTimeSec
+      });
+}
+
+// ======= Socket.io – klassiskt läge =======
+io.on('connection', (socket) => {
+
+  // ---- HOST: skapa klassiskt spel ----
+  socket.on('host:createClassicGame', ({ totalRoundsPerPlayer, hostName, drawTimeSec } = {}) => {
+    const parsedRounds = Math.max(1, Math.min(10, parseInt(totalRoundsPerPlayer, 10) || 4));
+    const clampedDrawTimeSec = Math.max(20, Math.min(180, parseInt(drawTimeSec, 10) || 60)); // 20–180 s, default 60
+
+    const gameId = `c-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    let code;
+    do { code = makeCode(); } while (classicGamesByCode.has(code) || gamesByCode.has(code) || teamGamesByCode.has(code));
+
+    const game = {
+      id: gameId,
+      code,
+      host: socket.id,
+      state: 'lobby',
+      totalRoundsPerPlayer: parsedRounds,
+      drawTimeSec: clampedDrawTimeSec,
+      players: new Map(),
+      playerOrder: [],
+      drawerIndex: 0,
+      roundNumber: 0,
+      totalRounds: 0,
+      current: null,
+      timer: null
+    };
+
+    classicGamesById.set(gameId, game);
+    classicGamesByCode.set(code, gameId);
+
+    socket.data.classicGameId = gameId;
+    socket.join(classicRoom(gameId));
+
+    socket.emit('classicGame:created', {
+      gameId,
+      code,
+      drawTimeSec: clampedDrawTimeSec,
+      totalRoundsPerPlayer: parsedRounds
+    });
+  });
+
+  // ---- SPELARE: gå med i klassiskt spel ----
+  socket.on('player:joinClassicGame', ({ code, name } = {}) => {
+    const gameId = classicGamesByCode.get(String(code || '').trim());
+    const g = classicGamesById.get(gameId);
+
+    if (!g || g.state !== 'lobby') {
+      socket.emit('classicGame:error', { message: 'Inget aktivt spel med den koden.' });
+      return;
+    }
+
+    const trimmedName = (name || '').toString().trim().slice(0, 30);
+    if (!trimmedName) {
+      socket.emit('classicGame:error', { message: 'Ogiltigt namn.' });
+      return;
+    }
+
+    const playerId = `cp-${Math.random().toString(36).slice(2, 8)}`;
+    const player = { id: playerId, name: trimmedName, socketId: socket.id, score: 0 };
+
+    g.players.set(playerId, player);
+    socket.data.classicGameId = gameId;
+    socket.data.classicPlayerId = playerId;
+    socket.join(classicRoom(gameId));
+
+    socket.emit('classicGame:joined', { playerId, gameId, code: g.code });
+
+    io.to(classicRoom(gameId)).emit('classicLobby:update', {
+      players: [...g.players.values()].map(p => ({ id: p.id, name: p.name })),
+      hostSocketId: g.host
+    });
+  });
+
+  // ---- HOST: stäng lobby och starta spel ----
+  socket.on('host:startClassicGame', ({ gameId } = {}) => {
+    const g = classicGamesById.get(gameId);
+    if (!g || socket.id !== g.host || g.state !== 'lobby') return;
+
+    if (g.players.size < 2) {
+      socket.emit('classicGame:error', { message: 'Minst 2 spelare krävs för att starta.' });
+      return;
+    }
+
+    // Fix player rotation order and total rounds
+    g.playerOrder = [...g.players.keys()];
+    g.totalRounds = g.playerOrder.length * g.totalRoundsPerPlayer;
+    g.drawerIndex = 0;
+    g.roundNumber = 0;
+
+    _startClassicRound(g, gameId);
+  });
+
+  // ---- Ritaren väljer ord ----
+  socket.on('classic:pickWord', ({ gameId, word } = {}) => {
+    const g = classicGamesById.get(gameId);
+    if (!g || g.state !== 'picking') return;
+
+    const pid = socket.data.classicPlayerId;
+    if (!g.current || pid !== g.current.drawerPlayerId) return;
+    if (!g.current.wordOptions.includes(word)) return;
+
+    g.current.word = word;
+    g.state = 'drawing';
+
+    io.to(classicRoom(gameId)).emit('classic:drawingStarted', {
+      drawerId: g.current.drawerPlayerId
+    });
+
+    // Start the round timer using drawTimeSec
+    g.timer = setTimeout(() => endClassicRound(gameId), g.drawTimeSec * 1000);
+  });
+
+  // ---- Relay ritning till alla andra ----
+  socket.on('classic:draw', ({ gameId, ...drawData } = {}) => {
+    const g = classicGamesById.get(gameId);
+    if (!g || g.state !== 'drawing') return;
+
+    const pid = socket.data.classicPlayerId;
+    if (!g.current || pid !== g.current.drawerPlayerId) return;
+
+    socket.to(classicRoom(gameId)).emit('classic:draw', drawData);
+  });
+
+  // ---- Gissare skickar gissning ----
+  socket.on('classic:guess', ({ gameId, guess } = {}) => {
+    const g = classicGamesById.get(gameId);
+    if (!g || g.state !== 'drawing') return;
+
+    const pid = socket.data.classicPlayerId;
+    if (!pid || !g.players.has(pid)) return;
+    if (!g.current || pid === g.current.drawerPlayerId) return;
+    if (g.current.correctGuessers.includes(pid)) return;
+
+    const guessText = (guess || '').toString().trim();
+    if (!guessText) return;
+
+    const isCorrect = guessText.toLowerCase() === g.current.word.toLowerCase();
+
+    if (isCorrect) {
+      const pointsEarned = Math.max(1, 6 - g.current.correctGuessers.length);
+      g.current.correctGuessers.push(pid);
+      g.current.roundScores.set(pid, (g.current.roundScores.get(pid) || 0) + pointsEarned);
+      g.players.get(pid).score += pointsEarned;
+
+      // Drawer gets 2 points per correct guesser
+      const drawer = g.players.get(g.current.drawerPlayerId);
+      if (drawer) {
+        drawer.score += 2;
+        g.current.roundScores.set(
+          g.current.drawerPlayerId,
+          (g.current.roundScores.get(g.current.drawerPlayerId) || 0) + 2
+        );
+      }
+
+      io.to(classicRoom(gameId)).emit('classic:guessResult', {
+        playerId: pid,
+        playerName: g.players.get(pid).name,
+        guess: guessText,
+        correct: true,
+        points: pointsEarned
+      });
+
+      // End round if all guessers have guessed correctly
+      const guessers = g.playerOrder.filter(id => id !== g.current.drawerPlayerId);
+      if (g.current.correctGuessers.length >= guessers.length) {
+        endClassicRound(gameId);
+      }
+    } else {
+      if (!g.current.wrongGuesses.has(pid)) g.current.wrongGuesses.set(pid, []);
+      const wrongList = g.current.wrongGuesses.get(pid);
+      const guessId = `${pid}-${wrongList.length}`;
+      wrongList.push({ id: guessId, text: guessText });
+
+      io.to(classicRoom(gameId)).emit('classic:guessResult', {
+        playerId: pid,
+        playerName: g.players.get(pid).name,
+        guess: guessText,
+        guessId,
+        correct: false,
+        points: 0
+      });
+    }
+  });
+
+  // ---- Ritaren ger rätt för en gissning ----
+  socket.on('classic:grantCorrect', ({ gameId, targetPlayerId } = {}) => {
+    const g = classicGamesById.get(gameId);
+    if (!g || g.state !== 'drawing') return;
+
+    const pid = socket.data.classicPlayerId;
+    if (!g.current || pid !== g.current.drawerPlayerId) return;
+    if (g.current.correctGuessers.includes(targetPlayerId)) return;
+    if (!g.players.has(targetPlayerId)) return;
+
+    const pointsEarned = Math.max(1, 6 - g.current.correctGuessers.length);
+    g.current.correctGuessers.push(targetPlayerId);
+    g.current.roundScores.set(
+      targetPlayerId,
+      (g.current.roundScores.get(targetPlayerId) || 0) + pointsEarned
+    );
+    g.players.get(targetPlayerId).score += pointsEarned;
+
+    // Drawer gets 2 points
+    const drawer = g.players.get(g.current.drawerPlayerId);
+    if (drawer) {
+      drawer.score += 2;
+      g.current.roundScores.set(
+        g.current.drawerPlayerId,
+        (g.current.roundScores.get(g.current.drawerPlayerId) || 0) + 2
+      );
+    }
+
+    io.to(classicRoom(gameId)).emit('classic:guessResult', {
+      playerId: targetPlayerId,
+      playerName: g.players.get(targetPlayerId).name,
+      guess: null,
+      correct: true,
+      granted: true,
+      points: pointsEarned
+    });
+
+    // End round if all guessers have guessed correctly
+    const guessers = g.playerOrder.filter(id => id !== g.current.drawerPlayerId);
+    if (g.current.correctGuessers.length >= guessers.length) {
+      endClassicRound(gameId);
+    }
+  });
+
+  // ---- Nästa ritare startar nästa omgång ----
+  socket.on('host:nextClassicRound', ({ gameId } = {}) => {
+    const g = classicGamesById.get(gameId);
+    if (!g || g.state !== 'round_end') return;
+
+    // Only the next drawer can start the next round
+    const nextDrawerIndex = (g.drawerIndex + 1) % g.playerOrder.length;
+    const nextDrawerPlayerId = g.playerOrder[nextDrawerIndex];
+
+    const pid = socket.data.classicPlayerId;
+    if (pid !== nextDrawerPlayerId) return;
+
+    g.drawerIndex = nextDrawerIndex;
+    _startClassicRound(g, gameId);
+  });
+});
+
+// ======================================================================
 // ========================= SERVER START ===============================
 // ======================================================================
 
