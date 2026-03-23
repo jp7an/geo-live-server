@@ -1156,7 +1156,7 @@ function _startClassicRound(g, gameId) {
   g.state = 'picking';
   const drawerPlayerId = g.playerOrder[g.drawerIndex];
   const drawer = g.players.get(drawerPlayerId);
-  const wordOptions = selectClassicWords(5);
+  const wordOptions = selectClassicWords(3);
 
   g.current = {
     wordOptions,
@@ -1164,7 +1164,8 @@ function _startClassicRound(g, gameId) {
     drawerPlayerId,
     correctGuessers: [],
     wrongGuesses: new Map(),
-    roundScores: new Map()
+    roundScores: new Map(),
+    drawerAwarded: false
   };
 
   // Send full round-start (with wordOptions) privately to the drawer
@@ -1356,19 +1357,23 @@ io.on('connection', (socket) => {
     const isCorrect = guessText.toLowerCase() === g.current.word.toLowerCase();
 
     if (isCorrect) {
-      const pointsEarned = Math.max(1, 6 - g.current.correctGuessers.length);
+      const wrongCount = g.current.wrongGuesses.has(pid) ? g.current.wrongGuesses.get(pid).length : 0;
+      const pointsEarned = Math.max(1, 6 - wrongCount);
       g.current.correctGuessers.push(pid);
       g.current.roundScores.set(pid, (g.current.roundScores.get(pid) || 0) + pointsEarned);
       g.players.get(pid).score += pointsEarned;
 
-      // Drawer gets 2 points per correct guesser
-      const drawer = g.players.get(g.current.drawerPlayerId);
-      if (drawer) {
-        drawer.score += 2;
-        g.current.roundScores.set(
-          g.current.drawerPlayerId,
-          (g.current.roundScores.get(g.current.drawerPlayerId) || 0) + 2
-        );
+      // Drawer gets 2 points, but only once (from the first correct guesser)
+      if (!g.current.drawerAwarded) {
+        const drawer = g.players.get(g.current.drawerPlayerId);
+        if (drawer) {
+          drawer.score += 2;
+          g.current.roundScores.set(
+            g.current.drawerPlayerId,
+            (g.current.roundScores.get(g.current.drawerPlayerId) || 0) + 2
+          );
+          g.current.drawerAwarded = true;
+        }
       }
 
       io.to(classicRoom(gameId)).emit('classic:guessResult', {
@@ -1379,11 +1384,7 @@ io.on('connection', (socket) => {
         points: pointsEarned
       });
 
-      // End round if all guessers have guessed correctly
-      const guessers = g.playerOrder.filter(id => id !== g.current.drawerPlayerId);
-      if (g.current.correctGuessers.length >= guessers.length) {
-        endClassicRound(gameId);
-      }
+      endClassicRound(gameId);
     } else {
       if (!g.current.wrongGuesses.has(pid)) g.current.wrongGuesses.set(pid, []);
       const wrongList = g.current.wrongGuesses.get(pid);
@@ -1411,7 +1412,8 @@ io.on('connection', (socket) => {
     if (g.current.correctGuessers.includes(targetPlayerId)) return;
     if (!g.players.has(targetPlayerId)) return;
 
-    const pointsEarned = Math.max(1, 6 - g.current.correctGuessers.length);
+    const wrongCount = g.current.wrongGuesses.has(targetPlayerId) ? g.current.wrongGuesses.get(targetPlayerId).length : 0;
+    const pointsEarned = Math.max(1, 6 - wrongCount);
     g.current.correctGuessers.push(targetPlayerId);
     g.current.roundScores.set(
       targetPlayerId,
@@ -1419,14 +1421,17 @@ io.on('connection', (socket) => {
     );
     g.players.get(targetPlayerId).score += pointsEarned;
 
-    // Drawer gets 2 points
-    const drawer = g.players.get(g.current.drawerPlayerId);
-    if (drawer) {
-      drawer.score += 2;
-      g.current.roundScores.set(
-        g.current.drawerPlayerId,
-        (g.current.roundScores.get(g.current.drawerPlayerId) || 0) + 2
-      );
+    // Drawer gets 2 points, but only once (from the first correct guesser)
+    if (!g.current.drawerAwarded) {
+      const drawer = g.players.get(g.current.drawerPlayerId);
+      if (drawer) {
+        drawer.score += 2;
+        g.current.roundScores.set(
+          g.current.drawerPlayerId,
+          (g.current.roundScores.get(g.current.drawerPlayerId) || 0) + 2
+        );
+        g.current.drawerAwarded = true;
+      }
     }
 
     io.to(classicRoom(gameId)).emit('classic:guessResult', {
@@ -1438,11 +1443,7 @@ io.on('connection', (socket) => {
       points: pointsEarned
     });
 
-    // End round if all guessers have guessed correctly
-    const guessers = g.playerOrder.filter(id => id !== g.current.drawerPlayerId);
-    if (g.current.correctGuessers.length >= guessers.length) {
-      endClassicRound(gameId);
-    }
+    endClassicRound(gameId);
   });
 
   // ---- Nästa ritare startar nästa omgång ----
