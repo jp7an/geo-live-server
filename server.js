@@ -1232,12 +1232,30 @@ io.on('connection', (socket) => {
     socket.data.classicGameId = gameId;
     socket.join(classicRoom(gameId));
 
+    // Register host as a player in the game
+    let hostPlayerId;
+    const trimmedHostName = (hostName || '').toString().trim().slice(0, 30);
+    if (trimmedHostName) {
+      hostPlayerId = `cp-${Math.random().toString(36).slice(2, 8)}`;
+      const hostPlayer = { id: hostPlayerId, name: trimmedHostName, socketId: socket.id, score: 0 };
+      game.players.set(hostPlayerId, hostPlayer);
+      socket.data.classicPlayerId = hostPlayerId;
+    }
+
     socket.emit('classicGame:created', {
       gameId,
       code,
       drawTimeSec: clampedDrawTimeSec,
-      totalRoundsPerPlayer: parsedRounds
+      totalRoundsPerPlayer: parsedRounds,
+      playerId: hostPlayerId
     });
+
+    if (hostPlayerId) {
+      io.to(classicRoom(gameId)).emit('classicLobby:update', {
+        players: [...game.players.values()].map(p => ({ id: p.id, name: p.name })),
+        hostSocketId: game.host
+      });
+    }
   });
 
   // ---- SPELARE: gå med i klassiskt spel ----
