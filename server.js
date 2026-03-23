@@ -891,6 +891,15 @@ io.on('connection', (socket) => {
 
     socket.emit('team:guessAccepted', { km: +km.toFixed(1) });
 
+    // Broadcast pin to all other players so spectators see locked-in guesses in real-time
+    const guessingPlayer = activeTeam.players.find(p => p.id === pid);
+    socket.to(teamRoom(gameId)).emit('team:guessPinUpdate', {
+      playerName: guessingPlayer ? guessingPlayer.name : 'Okänd',
+      teamName: activeTeam.name,
+      lat,
+      lng
+    });
+
     // Kontrollera om alla gissare i aktiva laget har gissat (hoppa över tomma platser)
     const guessers = activeTeam.players.filter(p => p.id !== null && p.id !== g.current.drawerPlayerId);
     const allGuessed = guessers.every(p => g.current.guesses.has(p.id));
@@ -1029,6 +1038,7 @@ function _startNextTeamSubRound(g, gameId) {
     totalRounds: g.totalRounds,
     drawingTeamName: team.name,
     drawerName: drawer.name,
+    drawerId: drawer.id,
     teamIndex: g.currentTeamIndex
   });
 }
