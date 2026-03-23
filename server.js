@@ -790,6 +790,7 @@ io.on('connection', (socket) => {
 
   socket.on('player:joinTeamLobby', handleJoinTeamLobby);
   socket.on('player:joinTeam', handleJoinTeamLobby);
+  socket.on('player:joinTeamByTeamId', handleJoinTeamLobby);
 
   // ---- HOST: starta lagspel ----
   socket.on('host:startTeamGame', ({ gameId }) => {
