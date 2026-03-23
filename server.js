@@ -1013,6 +1013,14 @@ function _startNextTeamSubRound(g, gameId) {
     drawerSocket.emit('team:cityChoices', {
       cities: cityChoices.map(c => ({ name: c.name, lat: c.lat, lng: c.lng }))
     });
+  } else {
+    console.warn(`[team] Drawer ${drawer.id} (name: ${drawer.name}) has no active socket. socketId=${drawer.socketId}`);
+    const hostSocket = g.host ? io.sockets.sockets.get(g.host) : null;
+    if (hostSocket) {
+      hostSocket.emit('teamGame:error', {
+        message: `Ritaren (${drawer.name}) är inte ansluten. Vänta tills de anslutit om igen.`
+      });
+    }
   }
 
   // Meddela alla om ny delomgång
