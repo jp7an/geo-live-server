@@ -1039,6 +1039,7 @@ function _startNextTeamSubRound(g, gameId) {
     drawingTeamName: team.name,
     drawerName: drawer.name,
     drawerId: drawer.id,
+    teamId: team.id,
     teamIndex: g.currentTeamIndex
   });
 }
