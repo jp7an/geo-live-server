@@ -1363,14 +1363,14 @@ io.on('connection', (socket) => {
       g.current.roundScores.set(pid, (g.current.roundScores.get(pid) || 0) + pointsEarned);
       g.players.get(pid).score += pointsEarned;
 
-      // Drawer gets 2 points, but only once (from the first correct guesser)
+      // Drawer gets 11 points, but only once (from the first correct guesser)
       if (!g.current.drawerAwarded) {
         const drawer = g.players.get(g.current.drawerPlayerId);
         if (drawer) {
-          drawer.score += 2;
+          drawer.score += 11;
           g.current.roundScores.set(
             g.current.drawerPlayerId,
-            (g.current.roundScores.get(g.current.drawerPlayerId) || 0) + 2
+            (g.current.roundScores.get(g.current.drawerPlayerId) || 0) + 11
           );
           g.current.drawerAwarded = true;
         }
@@ -1421,14 +1421,14 @@ io.on('connection', (socket) => {
     );
     g.players.get(targetPlayerId).score += pointsEarned;
 
-    // Drawer gets 2 points, but only once (from the first correct guesser)
+    // Drawer gets 11 points, but only once (from the first correct guesser)
     if (!g.current.drawerAwarded) {
       const drawer = g.players.get(g.current.drawerPlayerId);
       if (drawer) {
-        drawer.score += 2;
+        drawer.score += 11;
         g.current.roundScores.set(
           g.current.drawerPlayerId,
-          (g.current.roundScores.get(g.current.drawerPlayerId) || 0) + 2
+          (g.current.roundScores.get(g.current.drawerPlayerId) || 0) + 11
         );
         g.current.drawerAwarded = true;
       }
